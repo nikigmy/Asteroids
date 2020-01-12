@@ -14,14 +14,14 @@ public class ProjectileController : MonoBehaviour
 
     private void DestroyProjectile()
     {
-        GameManager.instance.LevelManager.PoolManager.ReturnObject(Defines.PoolKeys.bullet, gameObject);
+        GameManager.instance.LevelManager.PoolManager.ReturnObject(Defines.PoolKey.Bullet, gameObject);
     }
     
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Asteroid") || other.CompareTag("EnemyBullet") || other.CompareTag("Player"))
         {
-            GameManager.instance.LevelManager.PoolManager.ReturnObject(Defines.PoolKeys.bullet, gameObject);
+            GameManager.instance.LevelManager.PoolManager.ReturnObject(Defines.PoolKey.Bullet, gameObject);
         }
     }
 

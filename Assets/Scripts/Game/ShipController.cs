@@ -17,11 +17,15 @@ public class ShipController : MonoBehaviour
         float currentTime = Time.realtimeSinceStartup;
         mLastBulletTime = currentTime;
         wrapAround.OnBeginTeleport += DisableTrail;
+        
+        var inputController = GameManager.instance.InputManager.GetInputController();
+        inputController.GetDirectionalInput().OnDirectinalInput += ProcessDirectinalInput;
+        inputController.GetFireInput().OnButtonInput += Shoot;
+        
     }
 
     private void DisableTrail()
     {
-        Debug.Log("Pause");
         particleSystem.Pause();
 
         StartCoroutine(EnableTrail());
@@ -33,6 +37,7 @@ public class ShipController : MonoBehaviour
         {
             transform.position = Vector3.zero;
             mVelocity = Vector3.zero;
+            transform.rotation = Quaternion.Euler(Vector3.forward * 90);
         }
     }
 
@@ -40,20 +45,12 @@ public class ShipController : MonoBehaviour
     private IEnumerator EnableTrail()
     {
         yield return new WaitForEndOfFrame();
-        
-        Debug.Log("Play");
         particleSystem.Play();
     }
 
     private void Update()
     {
         ApplyMovement();
-//        if (EventSystem.current.IsPointerOverGameObject())
-//        {
-//            return;
-//        }
-        ProcessContinuousInput();
-        ProcessActionInput();
     }
 
     private void ApplyMovement()
@@ -62,20 +59,16 @@ public class ShipController : MonoBehaviour
         mVelocity *= Mathf.Pow(DAMPING, Time.deltaTime);
     }
 
-    private void ProcessContinuousInput()
+    private void ProcessDirectinalInput(Vector2 input)
     {
-        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
-            mVelocity += Time.deltaTime * ACCELERATION * transform.right;
-
-        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
-            transform.Rotate(new Vector3(0.0f, 0.0f, ANGULAR_VELOCITY * Time.deltaTime));
-        else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
-            transform.Rotate(new Vector3(0.0f, 0.0f, -ANGULAR_VELOCITY * Time.deltaTime));
+        input.y = Mathf.Clamp(input.y, 0, 1);
+        mVelocity += Time.deltaTime * ACCELERATION * input.y * transform.right;
+        transform.Rotate(new Vector3(0.0f, 0.0f, ANGULAR_VELOCITY * Time.deltaTime * input.x * -1));
     }
-
-    private void ProcessActionInput()
+    
+    public void Shoot()
     {
-        if (HasCooledDown(mLastBulletTime) && Input.GetKeyDown(KeyCode.Space))
+        if (HasCooledDown(mLastBulletTime))
         {
             mLastBulletTime = Time.realtimeSinceStartup;
             SpawnProjectile(BulletPrefab);

@@ -17,11 +17,11 @@ public class LevelFactory : MonoBehaviour
 		var obj = new GameObject("PoolManager");
 		var poolManager = obj.AddComponent<PoolManager>();
 		
-		poolManager.RegisterGenerator(Defines.PoolKeys.bullet, new BasicObjectGenerator(Defines.ResourcePaths.bulletPrefabPath));
-		poolManager.PopulatePool(Defines.PoolKeys.bullet, GameManager.instance.Config.bulletPool);
+		poolManager.RegisterGenerator(Defines.PoolKey.Bullet, new BasicObjectGenerator(Defines.ResourcePaths.bulletPrefabPath));
+		poolManager.PopulatePool(Defines.PoolKey.Bullet, GameManager.instance.Config.bulletPool);
 		
-		poolManager.RegisterGenerator(Defines.PoolKeys.asteroid, new AsteroidGenerator());
-		poolManager.PopulatePool(Defines.PoolKeys.asteroid, GameManager.instance.Config.minAsteroidPool);
+		poolManager.RegisterGenerator(Defines.PoolKey.Asteroid, new AsteroidGenerator());
+		poolManager.PopulatePool(Defines.PoolKey.Asteroid ,GameManager.instance.Config.minAsteroidPool);
 		
 		return poolManager;
 	}
@@ -31,12 +31,12 @@ public class LevelFactory : MonoBehaviour
 //		
 //	}
 
-	public void CreateLevel(LevelData level, PoolManager poolManager, Defines.OnAsteroidDestroyedDelegate onAsteroidDestroyed)
+	public void CreateLevel(LevelData level, PoolManager poolManager, Defines.OnAsteroidDestroyedDelegate onAsteroidDestroyed) 
 	{
 		var targetPool = (level.AsteroidCount * 4) * (GameManager.instance.Config.optimalAsteroidPoolPercentage / 100);
-		poolManager.PopulatePoolToTarget(Defines.PoolKeys.asteroid, targetPool);
+		poolManager.PopulatePoolToTarget(Defines.PoolKey.Asteroid, targetPool);
 
-		var asteroidsToPlace = poolManager.RetrieveObjects(Defines.PoolKeys.asteroid, level.AsteroidCount);
+		var asteroidsToPlace = poolManager.RetrieveObjects(Defines.PoolKey.Asteroid, level.AsteroidCount);
 
 		for (int i = 0; i < asteroidsToPlace.Length; i++)
 		{

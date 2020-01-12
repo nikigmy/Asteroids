@@ -28,3 +28,4 @@ MonoBehaviour:
   minAsteroidPool: 5
   bulletPool: 20
   optimalAsteroidPoolPercentage: 70
+  ControlScheme: 0

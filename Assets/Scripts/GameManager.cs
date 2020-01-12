@@ -12,6 +12,11 @@ public class GameManager : MonoBehaviour
 	private string selectedLevelName;
 	private Dictionary<string, LevelData> levels;
 	public static GameManager instance;
+	[SerializeField] private InputManager inputManager;
+	public InputManager InputManager
+	{
+		get { return inputManager; }
+	}
 	[SerializeField] private MainMenu mainMenu;
 	[SerializeField] private LevelManager levelManager;
 
@@ -27,6 +32,7 @@ public class GameManager : MonoBehaviour
 		{
 			instance = this;
 			levels = Resources.LoadAll(Defines.ResourcePaths.levelsFolder, typeof(LevelData)).ToDictionary(x => x.name, x => x as LevelData);
+			Debug.Assert(levels.Count > 0);
 		}
 		else
 		{
@@ -39,14 +45,33 @@ public class GameManager : MonoBehaviour
 	{
 		if (scene.name == Defines.SceneNames.mainMenu)
 		{
+			inputManager = GameObject.FindObjectOfType<InputManager>();
 			mainMenu = FindObjectOfType<MainMenu>();
 			mainMenu.GenerateDropdown(levels.Values.ToArray());
+
+			if (inputManager != null)
+			{
+				inputManager.Init(Config.ControlScheme);
+			}
+			
+			Debug.Assert(inputManager != null);
+			Debug.Assert(mainMenu != null);
 		}
 		else if(scene.name == Defines.SceneNames.game)
 		{
-			
+			if (inputManager == null)
+			{
+				inputManager = GameObject.FindObjectOfType<InputManager>();
+				if (inputManager != null)
+				{
+					inputManager.Init(Config.ControlScheme);
+				}
+			}
 			levelManager = FindObjectOfType<LevelManager>();
 			levelManager.Init(levels[selectedLevelName]);
+			
+			Debug.Assert(inputManager != null);
+			Debug.Assert(levelManager != null);
 		}
 	}
 

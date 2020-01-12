@@ -6,16 +6,16 @@ using UnityEngine;
 
 public class PoolManager : MonoBehaviour
 {
-	[SerializeField] private Dictionary<string, IObjectGenerator> objectGenerators;
-	private Dictionary<string, List<GameObject>> poolObjects;
+	[SerializeField] private Dictionary<Defines.PoolKey, IObjectGenerator> objectGenerators;
+	private Dictionary<Defines.PoolKey, List<GameObject>> poolObjects;
 
 	private void Awake()
 	{
-		objectGenerators = new Dictionary<string, IObjectGenerator>();
-		poolObjects = new Dictionary<string, List<GameObject>>();
+		objectGenerators = new Dictionary<Defines.PoolKey, IObjectGenerator>();
+		poolObjects = new Dictionary<Defines.PoolKey, List<GameObject>>();
 	}
 
-	public void RegisterGenerator(string key, IObjectGenerator generator)
+	public void RegisterGenerator(Defines.PoolKey key, IObjectGenerator generator)
 	{
 		if (!objectGenerators.ContainsKey(key))
 		{
@@ -27,7 +27,7 @@ public class PoolManager : MonoBehaviour
 		}
 	}
 
-	public void PopulatePool(string key, int count)
+	public void PopulatePool(Defines.PoolKey key, int count)
 	{
 		if (objectGenerators.ContainsKey(key))
 		{
@@ -44,7 +44,7 @@ public class PoolManager : MonoBehaviour
 		}
 	}
 
-	public void PopulatePoolToTarget(string key, int target)
+	public void PopulatePoolToTarget(Defines.PoolKey key, int target)
 	{
 		if (objectGenerators.ContainsKey(key))
 		{
@@ -64,7 +64,7 @@ public class PoolManager : MonoBehaviour
 		}
 	}
 
-	public void ReturnObject(string key, GameObject poolObject)
+	public void ReturnObject(Defines.PoolKey key, GameObject poolObject)
 	{
 		poolObject.SetActive(false);
 		poolObject.transform.parent = transform;
@@ -80,7 +80,7 @@ public class PoolManager : MonoBehaviour
 		}
 	}
 
-	public GameObject RetrieveObject(string key)
+	public GameObject RetrieveObject(Defines.PoolKey key)
 	{
 		GameObject resultObject = null;
 		if (poolObjects.ContainsKey(key) && poolObjects[key].Count > 0)
@@ -107,7 +107,7 @@ public class PoolManager : MonoBehaviour
 		return resultObject;
 	}
 
-	public GameObject[] RetrieveObjects(string key, int count)
+	public GameObject[] RetrieveObjects(Defines.PoolKey key, int count)
 	{
 		GameObject[] resultObjects = null;
 		if (poolObjects.ContainsKey(key))
@@ -147,7 +147,7 @@ public class PoolManager : MonoBehaviour
 		return resultObjects;
 	}
 
-	private List<GameObject> GenerateObjects(string key, int count, Transform parent = null)
+	private List<GameObject> GenerateObjects(Defines.PoolKey key, int count, Transform parent = null)
 	{
 		var result = new List<GameObject>(count);
 		for (int i = 0; i < count; i++)

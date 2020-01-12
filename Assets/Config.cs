@@ -28,4 +28,6 @@ public class Config : ScriptableObject
 	public int minAsteroidPool = 15;
 	public int bulletPool = 20;
 	public int optimalAsteroidPoolPercentage = 70;
+
+	[Header("Controls")] public Defines.ControlScheme ControlScheme;
 }

@@ -47,7 +47,7 @@ public class LevelManager : MonoBehaviour
 	public void OnAsteroidDestroyed(GameObject asteroid, int level, Vector3 hitDir)
 	{
 		Debug.Log(asteroid.GetInstanceID());
-		GameManager.instance.LevelManager.PoolManager.ReturnObject(Defines.PoolKeys.asteroid, asteroid);
+		GameManager.instance.LevelManager.PoolManager.ReturnObject(Defines.PoolKey.Asteroid, asteroid);
 
 		if (level > 1)
 		{
@@ -67,7 +67,7 @@ public class LevelManager : MonoBehaviour
 		yield return new WaitForSeconds(0.03f);
 
 		var nextLevel = level - 1;
-		var asteroids = GameManager.instance.LevelManager.PoolManager.RetrieveObjects(Defines.PoolKeys.asteroid, 2);
+		var asteroids = GameManager.instance.LevelManager.PoolManager.RetrieveObjects(Defines.PoolKey.Asteroid, 2);
 		var rot = Quaternion.Euler(new Vector3(0, 0, (Mathf.Atan(hitDir.y / hitDir.x) * Mathf.Rad2Deg) + 90));
 		
 		foreach (var asteroidObject in asteroids)

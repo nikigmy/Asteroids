@@ -15,8 +15,8 @@ public class MainMenu : MonoBehaviour
     {
         levelsDropdown.options = levels.Select(x => new Dropdown.OptionData(x.name)).ToList();
     }
-
-    public void OnDropdownValueChanged()
+    
+    public void LoadSelected()
     {
         GameManager.instance.LoadLevel(levelsDropdown.captionText.text);
     }
