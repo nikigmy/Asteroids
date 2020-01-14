@@ -3,19 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Object = System.Object;
 
 public class PoolManager : MonoBehaviour
 {
-	[SerializeField] private Dictionary<Defines.PoolKey, IObjectGenerator> objectGenerators;
-	private Dictionary<Defines.PoolKey, List<GameObject>> poolObjects;
+	[SerializeField] private Dictionary<string, object> objectGenerators;
+	private Dictionary<string, List<object>> poolObjects;
 
 	private void Awake()
 	{
-		objectGenerators = new Dictionary<Defines.PoolKey, IObjectGenerator>();
-		poolObjects = new Dictionary<Defines.PoolKey, List<GameObject>>();
+		objectGenerators = new Dictionary<string, object>();
+		poolObjects = new Dictionary<string, List<object>>();
 	}
-
-	public void RegisterGenerator(Defines.PoolKey key, IObjectGenerator generator)
+	
+	public void RegisterGenerator<T>(string key, IObjectGenerator<T> generator)
 	{
 		if (!objectGenerators.ContainsKey(key))
 		{
@@ -27,24 +28,57 @@ public class PoolManager : MonoBehaviour
 		}
 	}
 
-	public void PopulatePool(Defines.PoolKey key, int count)
+	public void RegisterGenerator<T> (IObjectGenerator<T> generator)
 	{
+		var type = typeof(T).FullName;
+		if (!objectGenerators.ContainsKey(type))
+		{
+			objectGenerators.Add(type, generator);
+		}
+		else
+		{
+			Debug.LogError(string.Format("Generator for key {0} already registered", type));
+		}
+	}
+
+	public T[] PopulatePool<T>(int count)
+	{
+		var type = typeof(T).FullName;
+		return PopulatePool<T>(type, count);
+	}
+	
+	public T[] PopulatePool<T>(string key, int count)
+	{
+		T[] generatedObjects = null;
+		IEnumerable<object> objects = null;
 		if (objectGenerators.ContainsKey(key))
 		{
-			var objects = GenerateObjects(key, count, transform);
-
+			generatedObjects = GenerateObjects<T>(key, count, transform);
+			objects = generatedObjects.Select(x => (object) x);
 			if (!poolObjects.ContainsKey(key))
 			{
-				poolObjects.Add(key, objects);
+				poolObjects.Add(key, new List<object>(objects){});
 			}
 			else
 			{
 				poolObjects[key].AddRange(objects);
 			}
 		}
+		else
+		{
+			Debug.LogError("No object generator for pool object: " + key);
+		}
+
+		return generatedObjects;
 	}
 
-	public void PopulatePoolToTarget(Defines.PoolKey key, int target)
+	public void PopulatePoolToTarget<T>(int target)
+	{
+		var type = typeof(T).FullName;
+		PopulatePoolToTarget<T>(type, target);
+	}
+	
+	public void PopulatePoolToTarget<T>(string key, int target)
 	{
 		if (objectGenerators.ContainsKey(key))
 		{
@@ -55,19 +89,33 @@ public class PoolManager : MonoBehaviour
 			}
 			else
 			{
-				poolObjects.Add(key, new List<GameObject>());
+				poolObjects.Add(key, new List<object>(target));
 				objectsToAdd = target;
 			}
 
 			if (objectsToAdd <= 0) return;
-			poolObjects[key].AddRange(GenerateObjects(key, objectsToAdd, transform));
+			poolObjects[key].AddRange(GenerateObjects<T>(key, objectsToAdd, transform).Select(x => (object)x).ToList());
 		}
 	}
 
-	public void ReturnObject(Defines.PoolKey key, GameObject poolObject)
+	public void ReturnObject<T>(T poolObject) 
 	{
-		poolObject.SetActive(false);
-		poolObject.transform.parent = transform;
+		var key = typeof(T).FullName;
+		ReturnObject(key, poolObject);
+	}
+	
+	public void ReturnObject(string key, object poolObject) 
+	{
+		if (poolObject.GetType().IsSubclassOf(typeof(MonoBehaviour)))
+		{
+			((MonoBehaviour) poolObject).gameObject.SetActive(false);
+			((MonoBehaviour) poolObject).transform.parent = transform;
+		}
+		else
+		{
+			((GameObject) poolObject).SetActive(false);
+			((GameObject) poolObject).transform.parent = transform;
+		}
 		
 		if (poolObjects.ContainsKey(key))
 		{
@@ -76,22 +124,30 @@ public class PoolManager : MonoBehaviour
 		else
 		{
 			Debug.LogError("Object not from this pool manager");
-			poolObjects.Add(key, new List<GameObject>() {poolObject});
+			poolObjects.Add(key, new List<object>() {poolObject});
 		}
 	}
 
-	public GameObject RetrieveObject(Defines.PoolKey key)
+	public T RetrieveObject<T>()
 	{
-		GameObject resultObject = null;
+		var type = typeof(T).FullName;
+		return RetrieveObject<T>(type);
+	}
+	
+	public T RetrieveObject<T>(string key)
+	{
+		object result = null;
+		T resultObject = default;
 		if (poolObjects.ContainsKey(key) && poolObjects[key].Count > 0)
 		{
-			resultObject = poolObjects[key][poolObjects[key].Count - 1];
+			result = poolObjects[key][poolObjects[key].Count - 1];
+			poolObjects[key].Remove(result);
 		}
 		else
 		{
 			if (objectGenerators.ContainsKey(key))
 			{
-				resultObject = objectGenerators[key].GenerateObject();
+				result = (objectGenerators[key] as IObjectGenerator<T>).GenerateObject();
 			}
 			else
 			{
@@ -99,65 +155,99 @@ public class PoolManager : MonoBehaviour
 			}
 		}
 
-		if (resultObject != null)
+		if (result != null)
 		{
-			resultObject.transform.parent = null;
+			if (typeof(T).IsSubclassOf(typeof(MonoBehaviour)))
+			{
+				((MonoBehaviour) result).transform.parent = null;
+			}
+			else
+			{
+				((GameObject) result).transform.parent = null;
+			}
+
+			resultObject = (T) result;
 		}
 
 		return resultObject;
 	}
 
-	public GameObject[] RetrieveObjects(Defines.PoolKey key, int count)
+	public T[] RetrieveObjects<T>(int count)
 	{
-		GameObject[] resultObjects = null;
+		var type = typeof(T).FullName;
+		return RetrieveObjects<T>(type, count);
+	}
+	
+	public T[] RetrieveObjects<T>(string key, int count)
+	{
+		bool isMonobehaviour = typeof(T).IsSubclassOf(typeof(MonoBehaviour));
+		T[] resultObjects = null;
 		if (poolObjects.ContainsKey(key))
 		{
-			if (poolObjects[key].Count >= count)
+			var objsToTake = Math.Min(count, poolObjects[key].Count);
+			resultObjects = new T[count];
+			if (objsToTake > 0)
 			{
-				resultObjects = poolObjects[key].Take(count).ToArray();
-				poolObjects[key].RemoveRange(0, count);
-			}
-			else
-			{
-				resultObjects = new GameObject[poolObjects[key].Count];
-				for (int i = 0; i < poolObjects[key].Count; i++)
+				for (int i = 0; i < objsToTake; i++)
 				{
-					resultObjects[i] = poolObjects[key][i];
-					resultObjects[i].transform.parent = null;
+					var result = poolObjects[key][i];
+					if (isMonobehaviour)
+					{
+						((MonoBehaviour) result).transform.parent = null;
+					}
+					else
+					{
+						((GameObject) result).transform.parent = null;
+					}
+
+					resultObjects[i] = (T) result;
 				}
 
-				resultObjects = resultObjects.Concat(GenerateObjects(key, count - poolObjects[key].Count))
-					.ToArray();
+				poolObjects[key].RemoveRange(0, objsToTake);
+			}
 
-				poolObjects[key].Clear();
+			if (objsToTake < count)
+			{
+				var generatedObjects = GenerateObjects<T>(key, count - objsToTake);
+				for (int i = 0; i < count - objsToTake; i++)
+				{
+					resultObjects[objsToTake + i] = generatedObjects[i];
+				}
 			}
 		}
 		else
 		{
 			if (objectGenerators.ContainsKey(key))
 			{
-				resultObjects = GenerateObjects(key, count).ToArray();
+				resultObjects = GenerateObjects<T>(key ,count).ToArray();
 			}
 			else
 			{
 				Debug.LogError(string.Format("Object generator for key: {0} does not exist", key));
 			}
 		}
+		
 
 		return resultObjects;
 	}
 
-	private List<GameObject> GenerateObjects(Defines.PoolKey key, int count, Transform parent = null)
+	private T[] GenerateObjects<T>(string key, int count, Transform parent = null)
 	{
-		var result = new List<GameObject>(count);
+		var generatedObjects = (objectGenerators[key] as IObjectGenerator<T>).GenerateObjects(count,parent);
+
+		bool isMonobehaviour = typeof(T).IsSubclassOf(typeof(MonoBehaviour));
 		for (int i = 0; i < count; i++)
 		{
-			var generatedObject = objectGenerators[key].GenerateObject(parent);
-			generatedObject.name = i.ToString();
-			result.Add(generatedObject);;
-			generatedObject.SetActive(false);
+			if (isMonobehaviour)
+			{
+				((MonoBehaviour) (object)generatedObjects[i]).gameObject.SetActive(false);
+			}
+			else
+			{
+				((GameObject) (object)generatedObjects[i]).SetActive(false);
+			}
 		}
-
-		return result;
+		
+		return generatedObjects;
 	}
 }

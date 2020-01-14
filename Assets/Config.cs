@@ -5,7 +5,10 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Config", menuName = "ScriptableObjects/Config", order = 1)]
 public class Config : ScriptableObject
 {
-	[Header("Asteroids", order = 1)] 
+[Header("Game settings")]
+public int startHealth;
+
+[Header("Asteroids", order = 1)] 
 	public int asteroidStartLevel = 3;
 	public float asteroidMinSpeed = 1;
 	public float asteroidMaxSpeed = 3;
@@ -25,6 +28,8 @@ public class Config : ScriptableObject
 	public float maxAngleRandomisation = 10;
 	
 	[Header("PoolSettings")]
+	public int shipPool = 1;
+	public int flyingSaucerPool = 1;
 	public int minAsteroidPool = 15;
 	public int bulletPool = 20;
 	public int optimalAsteroidPoolPercentage = 70;

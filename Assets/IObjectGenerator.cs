@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 
-public interface IObjectGenerator
+public interface IObjectGenerator<T>
 {
-    GameObject GenerateObject(Transform parent = null);
+    T GenerateObject(Transform parent = null);
+
+    T[] GenerateObjects(int count, Transform parent = null);
 }

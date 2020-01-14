@@ -323,7 +323,7 @@ GameObject:
   - component: {fileID: 7098726499687860914}
   m_Layer: 5
   m_Name: MobileInputController
-  m_TagString: Untagged
+  m_TagString: PlayerBullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

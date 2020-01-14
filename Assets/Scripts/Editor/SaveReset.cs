@@ -1,12 +1,14 @@
-﻿using UnityEngine;
-using System.Collections;
-using UnityEditor;
+﻿using UnityEditor;
+using UnityEngine;
 
-public class SaveReset : MonoBehaviour {
+namespace Editor
+{
+    public class SaveReset : MonoBehaviour {
     
-    [MenuItem("EditorTools/SaveReset")]
-    static void ResetSave()
-    {
-        PlayerPrefs.DeleteAll();
+        [MenuItem("EditorTools/SaveReset")]
+        static void ResetSave()
+        {
+            PlayerPrefs.DeleteAll();
+        }
     }
 }

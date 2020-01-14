@@ -28,7 +28,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4822455628494090}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1782589744544670
 GameObject:
@@ -60,7 +60,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4822455628494090}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: -90.00001, z: 0}
 --- !u!198 &198209673895268800
 ParticleSystem:
@@ -4813,7 +4813,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4822455628494090}
-  m_RootOrder: 0
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90.00001}
 --- !u!212 &212533687077974940
 SpriteRenderer:
@@ -4878,13 +4878,14 @@ GameObject:
   - component: {fileID: 60401382341276516}
   - component: {fileID: 50903190131153690}
   - component: {fileID: 114434139685058564}
+  - component: {fileID: -6767901466017928473}
   m_Layer: 8
   m_Name: Ship
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4822455628494090
 Transform:
   m_ObjectHideFlags: 0
@@ -4896,9 +4897,9 @@ Transform:
   m_LocalPosition: {x: -5.4, y: -0.7, z: 0}
   m_LocalScale: {x: 0.2, y: 0.2, z: 1}
   m_Children:
-  - {fileID: 4417077815561654}
   - {fileID: 4227884353332570}
   - {fileID: 4794822099637122}
+  - {fileID: 4417077815561654}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -4915,7 +4916,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gunpoint: {fileID: 4227884353332570}
-  BulletPrefab: {fileID: 134814, guid: 5ade543ddc0b14c1694c1aebbd91e297, type: 3}
 --- !u!60 &60401382341276516
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -4926,7 +4926,7 @@ PolygonCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -4985,5 +4985,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ee38fe77ebaf144088d8dc47175c089, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-6767901466017928473
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1977543131709194}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e50a6c8e8fd98643b79e97ae563bc79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

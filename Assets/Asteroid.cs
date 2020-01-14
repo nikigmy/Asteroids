@@ -6,7 +6,9 @@ using UnityEngine.Events;
 
 public class Asteroid : MonoBehaviour
 {
-    public event Defines.OnAsteroidDestroyedDelegate OnAsteroidDestroyed;
+    public int Level
+    {
+        get { return level;} }
     private int level;
     [SerializeField]
     private float speed;
@@ -22,13 +24,5 @@ public class Asteroid : MonoBehaviour
     private void Update()
     {
         transform.position += Time.deltaTime * speed * transform.right;
-    }
-
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.CompareTag("PlayerBullet"))
-        {
-            if (OnAsteroidDestroyed != null) OnAsteroidDestroyed(gameObject, level, other.transform.position - transform.position);
-        }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UI;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -9,76 +10,108 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
 	public Config Config;
-	private string selectedLevelName;
-	private Dictionary<string, LevelData> levels;
+	private int currentLevelIndex;
+	private LevelData[] levels;
 	public static GameManager instance;
-	[SerializeField] private InputManager inputManager;
+	private InputManager inputManager;
+	private UIManager uiManager;
 	public InputManager InputManager
 	{
 		get { return inputManager; }
 	}
-	[SerializeField] private MainMenu mainMenu;
-	[SerializeField] private LevelManager levelManager;
+	private LevelManager levelManager;
 
 
 	public LevelManager LevelManager
 	{
 		get { return levelManager; }
 	}
+
 	private void Awake()
 	{
 		SceneManager.sceneLoaded += SceneLoaded;
 		if (instance == null)
 		{
 			instance = this;
-			levels = Resources.LoadAll(Defines.ResourcePaths.levelsFolder, typeof(LevelData)).ToDictionary(x => x.name, x => x as LevelData);
-			Debug.Assert(levels.Count > 0);
+			levels = Resources.LoadAll(Defines.ResourcePaths.levelsFolder, typeof(LevelData)).Select(x => x as LevelData).ToArray();
 		}
 		else
 		{
-			Debug.LogError("Multiple game managers in scene");
 			gameObject.SetActive(false);
+			Destroy(gameObject);
 		}
 	}
 
 	private void SceneLoaded(Scene scene, LoadSceneMode mode)
 	{
+		SceneManager.SetActiveScene(scene);
+		
+//		uiManager = new UIManager(scene);
+		uiManager = Utils.FindOrCreate<UIManager>();
+		uiManager.Init(scene);
+		
+		inputManager = Utils.FindOrCreate<InputManager>(new Type[]{typeof(global::DontDestroyOnLoad)});
+			
+		inputManager.Init(Config.ControlScheme);
+		
 		if (scene.name == Defines.SceneNames.mainMenu)
 		{
-			inputManager = GameObject.FindObjectOfType<InputManager>();
-			mainMenu = FindObjectOfType<MainMenu>();
-			mainMenu.GenerateDropdown(levels.Values.ToArray());
-
-			if (inputManager != null)
-			{
-				inputManager.Init(Config.ControlScheme);
-			}
-			
-			Debug.Assert(inputManager != null);
-			Debug.Assert(mainMenu != null);
+			uiManager.LoadMainMenu(levels);
 		}
 		else if(scene.name == Defines.SceneNames.game)
 		{
-			if (inputManager == null)
+			if (levelManager == null)
 			{
-				inputManager = GameObject.FindObjectOfType<InputManager>();
-				if (inputManager != null)
-				{
-					inputManager.Init(Config.ControlScheme);
-				}
+				levelManager = Utils.FindOrCreate<LevelManager>();
+				levelManager.OnGameOver += OnGameOver;
+				levelManager.OnLevelComplete += OnLevelCompleted;
 			}
-			levelManager = FindObjectOfType<LevelManager>();
-			levelManager.Init(levels[selectedLevelName]);
-			
-			Debug.Assert(inputManager != null);
-			Debug.Assert(levelManager != null);
+
+			levelManager.Init(levels[currentLevelIndex]);
+			uiManager.LoadGameUI(levelManager);
 		}
 	}
 
-	public void LoadLevel(string levelName)
+	private void OnLevelCompleted(int livesleft)
 	{
-		selectedLevelName = levelName;
-		SceneManager.LoadScene(Defines.SceneNames.game);
-		
+		LoadLevel(currentLevelIndex + 1);
+	}
+
+	private void OnGameOver(int score)
+	{
+		LoadMainMenu();
+	}
+
+	public void LoadLevel(int levelIndex)
+	{
+		currentLevelIndex  = levelIndex;
+		var scene = SceneManager.GetSceneByName(Defines.SceneNames.game);
+		if (!scene.isLoaded)
+		{
+			SceneManager.LoadScene(Defines.SceneNames.game, LoadSceneMode.Additive);
+		}
+		else
+		{
+			levelManager.Init(levels[levelIndex]);
+			uiManager.LoadGameUI(levelManager);
+		}
+	}
+
+	public void LoadMainMenu()
+	{
+		var scene = SceneManager.GetSceneByName(Defines.SceneNames.mainMenu);
+		if (scene.isLoaded)
+		{
+			uiManager.LoadMainMenu(levels);
+		}
+		else
+		{
+			SceneManager.LoadScene(Defines.SceneNames.mainMenu, LoadSceneMode.Additive);
+		}
+	}
+
+	public void StartGame()
+	{
+		LoadLevel(0);
 	}
 }

@@ -10,7 +10,7 @@ public class WrapAroundObject : MonoBehaviour
 	public event TeleportDelegate OnTeleport;
 	private void OnTriggerStay2D(Collider2D other)
 	{
-		if (other.CompareTag("Boundary"))
+		if (other.CompareTag(Defines.Tags.boundary))
 		{
 			CheckForTeleport();
 		}
@@ -18,7 +18,7 @@ public class WrapAroundObject : MonoBehaviour
 	
 	private void OnTriggerEnter2D(Collider2D other)
 	{
-		if (other.CompareTag("Boundary"))
+		if (other.CompareTag(Defines.Tags.boundary))
 		{
 			CheckForTeleport();
 		}

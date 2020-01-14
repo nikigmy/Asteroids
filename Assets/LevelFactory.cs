@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Game;
 using UnityEngine;
 using UnityEngine.Animations;
 using Random = UnityEngine.Random;
@@ -16,27 +17,36 @@ public class LevelFactory : MonoBehaviour
 	{
 		var obj = new GameObject("PoolManager");
 		var poolManager = obj.AddComponent<PoolManager>();
+
+		poolManager.RegisterGenerator(new GenericObjectGenerator<ShipController>(Defines.ResourcePaths.shipPrefabPath));
 		
-		poolManager.RegisterGenerator(Defines.PoolKey.Bullet, new BasicObjectGenerator(Defines.ResourcePaths.bulletPrefabPath));
-		poolManager.PopulatePool(Defines.PoolKey.Bullet, GameManager.instance.Config.bulletPool);
+//		poolManager.RegisterGenerator(new ObjectGenerator<FlyingSaucer>(Defines.ResourcePaths.flyingSaucerPrefabPath));
+//		poolManager.PopulatePool(Defines.PoolKey.FlyingSaucer, GameManager.instance.Config.flyingSaucerPool);
 		
-		poolManager.RegisterGenerator(Defines.PoolKey.Asteroid, new AsteroidGenerator());
-		poolManager.PopulatePool(Defines.PoolKey.Asteroid ,GameManager.instance.Config.minAsteroidPool);
+		poolManager.RegisterGenerator(Defines.PoolKey.ShieldPickup.ToString(), new GenericObjectGenerator<Pickup>(Defines.ResourcePaths.shieldPickup));
+		poolManager.RegisterGenerator(Defines.PoolKey.HomingAmmoPickup.ToString(), new GenericObjectGenerator<Pickup>(Defines.ResourcePaths.homingAmmoPickup));
+		poolManager.RegisterGenerator(Defines.PoolKey.SpeedBoostPickup.ToString(), new GenericObjectGenerator<Pickup>(Defines.ResourcePaths.speedBoostPickup));
+		poolManager.RegisterGenerator(new GenericObjectGenerator<BulletController>(Defines.ResourcePaths.bulletPrefabPath));
+		poolManager.PopulatePool<BulletController>(GameManager.instance.Config.bulletPool);
 		
+		poolManager.RegisterGenerator(new AsteroidGenerator(Defines.ResourcePaths.asteroidPrefabPath));
+		poolManager.PopulatePool<Asteroid>(GameManager.instance.Config.minAsteroidPool);
+
 		return poolManager;
 	}
 
-//	private void GenerateObjects(, int count)
-//	{
-//		
-//	}
-
-	public void CreateLevel(LevelData level, PoolManager poolManager, Defines.OnAsteroidDestroyedDelegate onAsteroidDestroyed) 
+	public Tuple<ShipController, Asteroid[]> CreateLevel(LevelData level, PoolManager poolManager)
 	{
-		var targetPool = (level.AsteroidCount * 4) * (GameManager.instance.Config.optimalAsteroidPoolPercentage / 100);
-		poolManager.PopulatePoolToTarget(Defines.PoolKey.Asteroid, targetPool);
-
-		var asteroidsToPlace = poolManager.RetrieveObjects(Defines.PoolKey.Asteroid, level.AsteroidCount);
+		var targetAsteroidPool = (level.AsteroidCount * 4) * (GameManager.instance.Config.optimalAsteroidPoolPercentage / 100);
+		var targetPickupPool = targetAsteroidPool / 20;
+		
+		poolManager.PopulatePoolToTarget<Asteroid>(targetAsteroidPool);
+		poolManager.PopulatePool<Pickup>(Defines.PoolKey.ShieldPickup.ToString(), targetPickupPool);
+		poolManager.PopulatePool<Pickup>(Defines.PoolKey.HomingAmmoPickup.ToString(), targetPickupPool);
+		poolManager.PopulatePool<Pickup>(Defines.PoolKey.SpeedBoostPickup.ToString(), targetPickupPool);
+		
+		
+		var asteroidsToPlace = poolManager.RetrieveObjects<Asteroid>(level.AsteroidCount);
 
 		for (int i = 0; i < asteroidsToPlace.Length; i++)
 		{
@@ -53,11 +63,13 @@ public class LevelFactory : MonoBehaviour
 			var speed = Random.Range(GameManager.instance.Config.asteroidMinSpeed,
 				GameManager.instance.Config.asteroidMaxSpeed);
 			asteroid.GetComponent<Asteroid>().SetData(GameManager.instance.Config.asteroidStartLevel, speed);
-			
-			asteroid.GetComponent<Asteroid>().OnAsteroidDestroyed += onAsteroidDestroyed;
 
-			asteroid.name = i.ToString();
-			asteroid.SetActive(true);
+			asteroid.gameObject.SetActive(true);
 		}
+
+		var ship = poolManager.RetrieveObject<ShipController>();
+		ship.ResetShip();
+		
+		return Tuple.Create(ship, asteroidsToPlace);
 	}
 }

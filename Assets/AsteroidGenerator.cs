@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AsteroidGenerator : IObjectGenerator
+public class AsteroidGenerator : GenericObjectGenerator<Asteroid>
 {
-	private GameObject template;
-
-	public AsteroidGenerator()
+	public AsteroidGenerator(string prefabPath) : base(prefabPath)
 	{
-		template = Resources.Load(Defines.ResourcePaths.asteroidPrefabPath) as GameObject;
 	}
 
-	public GameObject GenerateObject(Transform parent = null)
+	public override Asteroid GenerateObject(Transform parent = null)
 	{
-		var asteroid = GameObject.Instantiate(template);
+		Asteroid asteroid = base.GenerateObject(parent);
+		
 		var lineRenderer = asteroid.GetComponent<LineRenderer>();
 		var polygonCollider = asteroid.GetComponent<PolygonCollider2D>();
+		var collisionReporter = asteroid.GetComponent<CollisionReporter>();
+		GameManager.instance.LevelManager.CollisionManager.RegisterCollisionReporter(collisionReporter);
 		
 		var pointsCount = Random.Range(GameManager.instance.Config.minPoints, GameManager.instance.Config.maxPoints);
 		var step = 360 / (pointsCount + 1);
@@ -46,4 +46,14 @@ public class AsteroidGenerator : IObjectGenerator
 		return asteroid;
 	}
 
+	public override Asteroid[] GenerateObjects(int count, Transform parent = null)
+	{
+		var result = new Asteroid[count];
+		for (int i = 0; i < count; i++)
+		{
+			result[i] = GenerateObject(parent);
+		}
+
+		return result;
+	}
 }

@@ -5,9 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - Boundary
-  - PlayerBullet
-  - EnemyBullet
+  - Projectile
   - Asteroid
+  - Enemy
   layers:
   - Default
   - TransparentFX

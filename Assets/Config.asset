@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78903aa6d8a75784c941491c5f9bdea2, type: 3}
   m_Name: Config
   m_EditorClassIdentifier: 
+  startHealth: 5
   asteroidStartLevel: 3
   asteroidMinSpeed: 1
   asteroidMaxSpeed: 2
@@ -25,6 +26,8 @@ MonoBehaviour:
   maxPoints: 10
   minAngleRandomisation: 0
   maxAngleRandomisation: 0
+  shipPool: 1
+  flyingSaucerPool: 1
   minAsteroidPool: 5
   bulletPool: 20
   optimalAsteroidPoolPercentage: 70
