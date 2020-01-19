@@ -1,31 +1,29 @@
-﻿using System.Linq;
+﻿using Managers;
 using UnityEngine;
-using UnityEngine.UI;
+using Utils;
 
 namespace UI
 {
     public class MainMenu : MonoBehaviour
     {
-        [SerializeField] private Canvas mainMenuCanvas;
-        [SerializeField] private Dropdown levelsDropdown;
-        [SerializeField] private Camera mainMenuCamera;
+        private AudioSource menuMusicSource;
 
-        public void Init(LevelData[] levels)
+        public void Show()
         {
-            levelsDropdown.options = levels.Select(x => new Dropdown.OptionData(x.name)).ToList();
-            mainMenuCanvas.gameObject.SetActive(true);
-            mainMenuCamera.gameObject.SetActive(true);
+            menuMusicSource = GameManager.instance.AudioManager.Play(Constants.AudioKeys.menuMusic,
+                AudioGroup.Music, true, Vector3.zero);
+            gameObject.SetActive(true);
         }
-    
-        public void LoadSelected()
+
+        public void StartClicked()
         {
             GameManager.instance.StartGame();
         }
 
-        public void Disable()
+        public void Hide()
         {
-            mainMenuCanvas.gameObject.SetActive(false);
-            mainMenuCamera.gameObject.SetActive(false);
+            GameManager.instance.PoolManager.ReturnObject(menuMusicSource);
+            gameObject.SetActive(false);
         }
     }
 }

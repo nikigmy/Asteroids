@@ -1,105 +1,82 @@
-﻿using System;
-using System.Collections;
-using System.Linq;
+﻿using Managers;
+using ScriptableObjects;
 using UnityEngine;
+using Utils;
 
 namespace Game
 {
-    public class ShipController : MonoBehaviour
+    /// <summary>
+    /// Base controller for ships
+    /// </summary>
+    public abstract class ShipController : MonoBehaviour
     {
-        private readonly Vector3 shipInitialRotation = new Vector3(0, 0, 90);
-        [SerializeField] private Transform gunpoint;
-
-        private WrapAroundObject wrapAround;
-        private ParticleSystem particleSystem;
-        private void Awake()
+        protected virtual void Awake()
         {
-            particleSystem = GetComponentInChildren<ParticleSystem>();
-            wrapAround = GetComponent<WrapAroundObject>();
-            float currentTime = Time.realtimeSinceStartup;
-            mLastBulletTime = currentTime;
-            wrapAround.OnBeginTeleport += BeginTeleport;
+            mActive = false;
+            mLastBulletTime = Time.realtimeSinceStartup;
+        }
+
+        protected virtual void Update()
+        {
+            if (mShipData != null) ApplyMovement();
+        }
         
-            var inputController = GameManager.instance.InputManager.GetInputController();
-            inputController.GetDirectionalInput().OnDirectinalInput += ProcessDirectinalInput;
-            inputController.GetFireInput().OnButtonInput += Shoot;
+        protected virtual void OnDisable()
+        {
+            mActive = false;
         }
 
-        private void BeginTeleport()
+        /// <summary>
+        /// Initialise the ship
+        /// </summary>
+        /// <param name="data">Data of the ship</param>
+        public virtual void Init(ShipData data)
         {
-            DisableTrail(true);
+            mShipData = data;
+            mActive = true;
         }
 
-        private void DisableTrail(bool enableAfterwards)
+        /// <summary>
+        /// Resets the ship
+        /// </summary>
+        public virtual void ResetShip()
         {
-            particleSystem.Pause();
-
-            if (enableAfterwards)
-            {
-                StartCoroutine(EnableTrail());
-            }
-        }
-
-        public void ResetShip()
-        {
-            gameObject.SetActive(true);
-            DisableTrail(true);
-            transform.position = Vector3.zero;
-            transform.rotation = Quaternion.Euler(shipInitialRotation);
             mVelocity = Vector3.zero;
         }
 
-
-        private IEnumerator EnableTrail()
-        {
-            yield return new WaitForEndOfFrame();
-            particleSystem.Play();
-        }
-
-        private void Update()
-        {
-            ApplyMovement();
-        }
-
-        private void ApplyMovement()
+        /// <summary>
+        /// Apply mVelocity and Damping to the ship transform
+        /// </summary>
+        protected virtual void ApplyMovement()
         {
             transform.position += mVelocity * Time.deltaTime;
-            mVelocity *= Mathf.Pow(DAMPING, Time.deltaTime);
+            mVelocity *= Mathf.Pow(mShipData.Damping, Time.deltaTime);
         }
 
-        private void ProcessDirectinalInput(Vector2 input)
+        /// <summary>
+        /// Checks if the firing has cooled down
+        /// </summary>
+        /// <returns>Whether the firing has cooled down</returns>
+        protected virtual bool HasCooledDown()
         {
-            input.y = Mathf.Clamp(input.y, 0, 1);
-            mVelocity += Time.deltaTime * ACCELERATION * input.y * transform.right;
-            transform.Rotate(new Vector3(0.0f, 0.0f, ANGULAR_VELOCITY * Time.deltaTime * input.x * -1));
+            return Time.realtimeSinceStartup - mLastBulletTime >= mShipData.FireRate;
         }
 
-        private void Shoot()
+        /// <summary>
+        /// Plays shooting sound
+        /// </summary>
+        protected virtual void Shoot()
         {
-            if (HasCooledDown(mLastBulletTime))
-            {
-                mLastBulletTime = Time.realtimeSinceStartup;
-                var bulletObject = GameManager.instance.LevelManager.PoolManager.RetrieveObject<BulletController>();
-                var bulletTransform = bulletObject.transform;
-                
-                bulletTransform.position = gunpoint.position;
-                bulletTransform.rotation = gunpoint.rotation;
-                
-                bulletObject.Init(Defines.ProjectileMode.Friendly);
-                bulletObject.gameObject.SetActive(true);
-            }
+            GameManager.instance.AudioManager.Play(Constants.AudioKeys.lazerBlast, AudioGroup.Sfx, false,
+                transform.position);
         }
 
-        private bool HasCooledDown(float time)
-        {
-            return (Time.realtimeSinceStartup - time >= 0.3f);
-        }
+        protected bool mActive;
+        
+        protected float mLastBulletTime;
 
-        private Vector3 mVelocity;
-        private float mLastBulletTime;
+        protected ShipData mShipData;
 
-        private const float ACCELERATION = 10.0f;
-        private const float DAMPING = 0.4f;
-        private const float ANGULAR_VELOCITY = 80.0f;
+        protected Vector3 mVelocity;
     }
 }

@@ -3,10 +3,10 @@ using UnityEngine;
 
 namespace Editor
 {
-    public class SaveReset : MonoBehaviour {
-    
+    public class SaveReset : MonoBehaviour
+    {
         [MenuItem("EditorTools/SaveReset")]
-        static void ResetSave()
+        private static void ResetSave()
         {
             PlayerPrefs.DeleteAll();
         }

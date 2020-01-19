@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8540572790577240124}
   - component: {fileID: 6893752976725709748}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Graphics
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -92,9 +92,9 @@ GameObject:
   - component: {fileID: 5847445062591134821}
   - component: {fileID: 5847445062591134820}
   - component: {fileID: 8460645586764888626}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: ShieldPickup
-  m_TagString: Untagged
+  m_TagString: Pickup
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -142,4 +142,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d93c741c9e8f804d8f9b34f9892f65c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effect: 1
+  Effect: 1

@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cda3c9411b77399489fd464c369bfb30, type: 3}
+  m_Name: AudioRepository
+  m_EditorClassIdentifier: 
+  AudioDatas:
+  - Key: LazerBlast
+    Clips:
+    - {fileID: 8300000, guid: ae7ddf81b68915742a79d233359a0c4a, type: 3}
+    - {fileID: 8300000, guid: d7af7331c6a928c4baaef0fb489ec23a, type: 3}
+  - Key: Explosion
+    Clips:
+    - {fileID: 8300000, guid: ba718ecbc442e2e4697fbb0882504ec8, type: 3}
+    - {fileID: 8300000, guid: c406337c737d8fc4789bcf862f4b8b7a, type: 3}
+    - {fileID: 8300000, guid: 8d474a8b7984c504e8f9215731182ab3, type: 3}
+    - {fileID: 8300000, guid: 8e8b36e50d486bc45b76c2a1a5d4d0a8, type: 3}
+  - Key: Pickup
+    Clips:
+    - {fileID: 8300000, guid: 93ddea2f346122f458ec200c334e6334, type: 3}
+  - Key: MenuMusic
+    Clips:
+    - {fileID: 8300000, guid: 107a805c9a88a9e408500e67fbd5efbf, type: 3}
+  - Key: GameMusic
+    Clips:
+    - {fileID: 8300000, guid: f7c02f8d16bf7ef46a74315b23166148, type: 3}
+  - Key: GameOver
+    Clips:
+    - {fileID: 8300000, guid: fe6b15ae679ce314dab9f7cd3a308e62, type: 3}
+  - Key: GameComplete
+    Clips:
+    - {fileID: 8300000, guid: ecfeb1ca7d306094cb9011641bb283bf, type: 3}

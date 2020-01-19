@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4348859307757847546}
   - component: {fileID: 5196541161551417347}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Graphics
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -92,9 +92,9 @@ GameObject:
   - component: {fileID: 9063790647100983806}
   - component: {fileID: 2126937568118133697}
   - component: {fileID: 5336048873184460075}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: HomingAmmoPickup
-  m_TagString: Untagged
+  m_TagString: Pickup
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -108,7 +108,7 @@ Transform:
   m_GameObject: {fileID: 3089240464689540574}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1.0741}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4348859307757847546}
   m_Father: {fileID: 0}
@@ -142,4 +142,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d93c741c9e8f804d8f9b34f9892f65c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effect: 2
+  Effect: 2

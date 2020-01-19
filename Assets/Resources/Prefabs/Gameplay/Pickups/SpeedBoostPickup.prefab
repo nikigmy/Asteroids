@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4567757231667323926}
   - component: {fileID: 8231166942821434182}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Graphics
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -92,9 +92,9 @@ GameObject:
   - component: {fileID: 8958854215896243556}
   - component: {fileID: 1752381740403124422}
   - component: {fileID: 6224511739144873319}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: SpeedBoostPickup
-  m_TagString: Untagged
+  m_TagString: Pickup
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

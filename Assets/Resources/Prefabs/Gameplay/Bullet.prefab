@@ -48,8 +48,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67ea1daa7d2d448eab12619a38bdfb85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  projectileLife: 1
-  ProjectileSpeed: 15
+  graphics: {fileID: 212469913616628746}
 --- !u!114 &114370554963643606
 MonoBehaviour:
   m_ObjectHideFlags: 0
