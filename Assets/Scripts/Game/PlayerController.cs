@@ -93,14 +93,8 @@ namespace Game
             if (GameManager.Instance.GamePaused || !mActive) return;
 
             var input = new Vector2(args.Value.x, Mathf.Clamp(args.Value.y, 0, 1));
-            var speed = mShipData.Acceleration;
             
-            if (mEffectHandler.GetCurrentEffects().Any(e => e == Declarations.EffectType.Speed))
-            {
-                speed *= 1.3f;
-            }
-            
-            mVelocity += Time.deltaTime * speed * input.y * transform.right;
+            mVelocity += Time.deltaTime * mAcceleration * input.y * transform.right;
 
             transform.Rotate(new Vector3(0.0f, 0.0f, mShipData.AngularVelocity * Time.deltaTime * input.x * -1));
         }
@@ -114,10 +108,9 @@ namespace Game
             var dir = input - Vector2.zero;
 
             var targetAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-            Debug.LogError(targetAngle);
+            
             var accelerationPower = Mathf.Sqrt(input.y * input.y + input.x * input.x);
-            var speed = mShipData.Acceleration * accelerationPower;
-            if (mEffectHandler.GetCurrentEffects().Contains(Declarations.EffectType.Speed)) speed *= 1.3f;
+            var speed = mAcceleration * accelerationPower;
 
             mVelocity += Time.deltaTime * speed * thisTransform.right;
 

@@ -22,7 +22,7 @@ namespace Managers
         
         public uint CurrentLevelNumber => mCurrentLevelIndex + 1;
 
-        public bool GamePaused { get; protected set; }
+        public bool GamePaused { get; private set; }
 
         public UIManager UIManager
         {
@@ -238,7 +238,7 @@ namespace Managers
         {
             poolManager.RegisterGenerator(
                 new GenericObjectGenerator<PlayerController>(Constants.ResourcePaths.cShipPrefabPath));
-            poolManager.PopulatePool<PlayerController>(1);
+            poolManager.PopulatePool<PlayerController>(Config.shipPool);
             poolManager.RegisterGenerator(
                 new GenericObjectGenerator<FlyingSaucer>(Constants.ResourcePaths.cFlyingSaucerPrefabPath));
 

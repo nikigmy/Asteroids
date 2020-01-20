@@ -164,13 +164,11 @@ namespace Game
 
             OnAsteroidDestroyed(asteroid, bullet);
         }
-
-
+        
         private void AsteroidPlayerHit(Tuple<Collider2D, Collider2D> obj)
         {
             TakeDamage();
         }
-
 
         private void BulletPlayerHit(Tuple<Collider2D, Collider2D> collision)
         {
@@ -372,7 +370,7 @@ namespace Game
 
         private void TakeDamage()
         {
-            if (!Player.GetComponent<EffectHandler>().GetCurrentEffects().Contains(Declarations.EffectType.Shield))
+            if (!Player.GetComponent<EffectHandler>().IsEffectActive(Declarations.EffectType.Shield))
             {
                 Health--;
                 this.Raise(OnHealthChanged, new ValueArgs<int>(Health));

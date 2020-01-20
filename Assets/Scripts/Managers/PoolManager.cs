@@ -152,16 +152,7 @@ namespace Managers
         {
             if (obj != null)
             {
-                if (obj.GetType().IsSubclassOf(typeof(Component)))
-                {
-                    ((Component) obj).gameObject.SetActive(false);
-                    ((Component) obj).transform.parent = transform;
-                }
-                else
-                {
-                    ((GameObject) obj).SetActive(false);
-                    ((GameObject) obj).transform.parent = transform;
-                }
+                ReturnObject(obj.GetType().IsSubclassOf(typeof(Component)), obj);
 
                 if (mPoolObjectsDictionary.ContainsKey(key))
                 {
@@ -204,16 +195,7 @@ namespace Managers
                 for (var i = 0; i < objects.Length; i++)
                 {
                     var poolObject = objects[i];
-                    if (isComponent)
-                    {
-                        ((Component) poolObject).gameObject.SetActive(false);
-                        ((Component) poolObject).transform.parent = transform;
-                    }
-                    else
-                    {
-                        ((GameObject) poolObject).SetActive(false);
-                        ((GameObject) poolObject).transform.parent = transform;
-                    }
+                    ReturnObject(isComponent, poolObject);
 
                     if (hasActiveObjects) mActiveObjectsDictionary[key].Remove(poolObject);
                 }
@@ -263,11 +245,8 @@ namespace Managers
 
             if (result != null)
             {
-                if (typeof(T).IsSubclassOf(typeof(Component)))
-                    ((Component) result).transform.parent = null;
-                else
-                    ((GameObject) result).transform.parent = null;
-
+                ReleaseObject(typeof(T).IsSubclassOf(typeof(Component)), result);
+                
                 resultObject = (T) result;
             }
 
@@ -311,10 +290,8 @@ namespace Managers
                     for (var i = 0; i < objsToTake; i++)
                     {
                         var result = mPoolObjectsDictionary[key][i];
-                        if (isComponent)
-                            ((Component) result).transform.parent = null;
-                        else
-                            ((GameObject) result).transform.parent = null;
+                        
+                        ReleaseObject(isComponent, result);
 
                         resultObjects[i] = (T) result;
                     }
@@ -379,20 +356,57 @@ namespace Managers
                 mActiveObjectsDictionary[activeObjectPool.Key].Clear();
             }
         }
-
+        
         private T[] GenerateObjects<T>(string key, int count, Transform parent = null)
         {
             var generatedObjects = (mObjectGenerators[key] as IObjectGenerator<T>).GenerateObjects(count, parent);
 
             var isComponent = typeof(T).IsSubclassOf(typeof(Component));
             for (var i = 0; i < count; i++)
-                if (isComponent)
-                    ((Component) (object) generatedObjects[i]).gameObject.SetActive(false);
-                else
-                    ((GameObject) (object) generatedObjects[i]).SetActive(false);
+                DeactivateObject(isComponent, generatedObjects[i]);
 
             return generatedObjects;
         }
+
+        //These methods are used so both MonoBehaviors and GameObjects with no scripts attached can be passed to the pool
+        #region Activation And Deactivation Of Objects
+        private void ReturnObject(bool isComponent, object poolObject)
+        {
+            if (isComponent)
+            {
+                ((Component) poolObject).transform.SetParent(transform);
+            }
+            else
+            {
+                ((GameObject) poolObject).transform.SetParent(transform);
+            }
+            DeactivateObject(isComponent, poolObject);
+        }
+
+        private void ReleaseObject(bool isComponent, object poolObject)
+        {
+            if (isComponent)
+            {
+                ((Component) poolObject).transform.SetParent(null);
+            }
+            else
+            {
+                ((GameObject) poolObject).transform.SetParent(null);
+            }
+        }
+
+        private void  DeactivateObject(bool isComponent, object poolObject)
+        {
+            if (isComponent)
+            {
+                ((Component) poolObject).gameObject.SetActive(false);
+            }
+            else
+            {
+                ((GameObject) poolObject).SetActive(false);
+            }
+        }
+        #endregion
         
         private Dictionary<string, List<object>> mActiveObjectsDictionary;
         private Dictionary<string, List<object>> mPoolObjectsDictionary;

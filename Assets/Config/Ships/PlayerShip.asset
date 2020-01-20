@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c38a2be3468520a4eac2bd0bce730888, type: 3}
   m_Name: PlayerShip
   m_EditorClassIdentifier: 
-  Acceleration: 12
-  Damping: 0.6
+  Acceleration: 30
   AngularVelocity: 360
+  Damping: 0.3
   FireRate: 0.2

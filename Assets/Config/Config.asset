@@ -180,6 +180,7 @@ MonoBehaviour:
   playerProjectileColor: {r: 0, g: 0.36995363, b: 1, a: 1}
   enemyProjectileColor: {r: 1, g: 0, b: 0, a: 1}
   minAsteroidPool: 15
+  shipPool: 1
   audioSourcePool: 10
   bulletPool: 20
   optimalAsteroidPoolPercentage: 70

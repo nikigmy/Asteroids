@@ -15,7 +15,9 @@ namespace Game
             if (GameManager.Instance.GamePaused || !mActive) return;
 
             AddVelocity();
+            
             base.Update();
+            
             if (HasCooledDown()) Shoot();
         }
 

@@ -63,14 +63,15 @@ namespace ScriptableObjects
         [Header("PoolSettings", order = 8)] 
         public int minAsteroidPool = 15;
 
+        public int shipPool = 1;
+
         public int audioSourcePool = 10;
 
         public int bulletPool = 20;
 
         public int optimalAsteroidPoolPercentage = 70;
 
-        [Header("Controls", order = 8)] 
-        public Declarations.ControlScheme ControlScheme;
-
+        [Header("Controls", order = 9)] 
+        public Declarations.ControlScheme ControlScheme; //This can be set in the initialisation depending on the platform. Left here for testing purposes
     }
 }

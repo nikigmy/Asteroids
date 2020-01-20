@@ -100,7 +100,7 @@ namespace UI
                     GameManager.Instance.PoolManager.RetrieveObjects<GameObject>(Constants.PoolKeys.cHeart, health - hearts);
                 for (var i = 0; i < health - hearts; i++)
                 {
-                    heartObjects[i].transform.parent = heartContainer;
+                    heartObjects[i].transform.SetParent(heartContainer);
                     heartObjects[i].SetActive(true);
                 }
             }

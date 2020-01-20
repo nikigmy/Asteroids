@@ -28,9 +28,17 @@ namespace UI
         /// <summary>
         /// Event handler for the start button
         /// </summary>
-        public void StartClicked()
+        public void OnStartClicked()
         {
             GameManager.Instance.StartGame();
+        }
+        
+        /// <summary>
+        /// Event handler for the exit button
+        /// </summary>
+        public void OnExitClicked()
+        {
+            Application.Quit();
         }
         
         private AudioSource mMenuMusicSource;

@@ -27,6 +27,12 @@ namespace Input
             mRectSize = new Vector2(mBgImage.rect.width, mBgImage.rect.height);
         }
         
+        private void OnDisable()
+        {
+            mInputVector = Vector2.zero;
+            pad.anchoredPosition = Vector2.zero;
+        }
+
         private void Update()
         {
             if (mInputVector != Vector2.zero)
