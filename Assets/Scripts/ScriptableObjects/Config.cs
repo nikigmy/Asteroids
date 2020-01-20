@@ -49,6 +49,10 @@ namespace ScriptableObjects
         [Header("Pickups", order = 6)] 
         public Declarations.EffectDuration[] pickupDurations;
 
+        public int pickupDropPercentage = 5;
+        
+        public int speedBoostPercentage = 30;
+
         [Header("Projectiles", order = 7)] 
         public float projectileLife = 2.5f;
 

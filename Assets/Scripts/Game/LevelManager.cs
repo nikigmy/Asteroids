@@ -259,7 +259,7 @@ namespace Game
         {
             var targetAsteroidPool =
                 level.AsteroidCount * 4 * (mConfiguration.optimalAsteroidPoolPercentage / 100);
-            var targetPickupPool = targetAsteroidPool / 20;
+            var targetPickupPool = (targetAsteroidPool * mConfiguration.pickupDropPercentage) / 100;
 
             mPoolManager.PopulatePoolToTarget<Asteroid>(targetAsteroidPool);
             mPoolManager.PopulatePool<Pickup>(Constants.PoolKeys.cShieldPickup, targetPickupPool);
@@ -332,7 +332,7 @@ namespace Game
 
             if (asteroid.Level > 1) SplitAsteroid(asteroid.Level, asteroid.transform.position, hitDir);
 
-            if (Random.Range(0, 20) == 0)
+            if (Random.Range(0, 100 / mConfiguration.pickupDropPercentage) == 0)
             {
                 var key = Constants.PoolKeys.cShieldPickup;
                 var pickupIndex = Random.Range(0, 3);

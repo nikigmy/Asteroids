@@ -133,7 +133,7 @@ namespace Game
             switch (effect.Value)
             {
                 case Declarations.EffectType.Speed:
-                    mAcceleration = mShipData.Acceleration * 1.3f;
+                    mAcceleration = (mShipData.Acceleration * GameManager.Instance.Config.speedBoostPercentage) / 100;
                     var engineColor = engineParticle.colorOverLifetime;
                     engineColor.color = GameManager.Instance.Config.boostedEngineColor;
                     break;
