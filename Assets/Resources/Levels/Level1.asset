@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e67a42ea283f1db40a0c24f37d77ebaf, type: 3}
   m_Name: Level1
   m_EditorClassIdentifier: 
-  AsteroidCount: 1
+  AsteroidCount: 5
   FlyingSaucerTimings:
-  - 5
-  - 10
+  - 20

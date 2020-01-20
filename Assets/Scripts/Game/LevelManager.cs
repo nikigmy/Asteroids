@@ -138,9 +138,9 @@ namespace Game
         /// </summary>
         public void Clear()
         {
+            mPoolManager.ReturnObject(mGameMusicSource);
             StopCoroutine("SpawnFlyingSaucerRoutine");
             mPoolManager.ReturnAllObjects(new[] {typeof(AudioSource).FullName, Constants.PoolKeys.cHeart});
-            mPoolManager.ReturnObject(mGameMusicSource);
         }
 
         #endregion
@@ -204,7 +204,7 @@ namespace Game
 
             if (bullet.Mode == ProjectileMode.Friendly)
             {
-                AddScore(2000);
+                AddScore(mConfiguration.flyingSaucerReward);
 
                 mPoolManager.ReturnObject(enemy);
                 mPoolManager.ReturnObject(bullet);
@@ -251,7 +251,7 @@ namespace Game
                 pickup.Effect == Declarations.EffectType.Speed ? Constants.PoolKeys.cSpeedBoostPickup :
                 Constants.PoolKeys.cHomingAmmoPickup;
             player.GetComponent<EffectHandler>().AddEffect(pickup.Effect,
-                mConfiguration.pickupDurations.FirstOrDefault(x => x.effectType == pickup.Effect)
+                mConfiguration.pickupDurations.First(x => x.effectType == pickup.Effect)
                     .duration);
 
             mPoolManager.ReturnObject(key, pickup);
@@ -273,7 +273,7 @@ namespace Game
 
             var asteroidsToPlace = mPoolManager.RetrieveObjects<Asteroid>(level.AsteroidCount);
 
-            var speeds = mConfiguration.asteroidLevels.First(x =>
+            var asteroidLevelData = mConfiguration.asteroidLevels.First(x =>
                 x.asteroidLevel == mConfiguration.asteroidStartLevel);
             for (var i = 0; i < asteroidsToPlace.Length; i++)
             {
@@ -287,8 +287,8 @@ namespace Game
                     0, Utils.Utils.GenerateRandomValue(0, 180));
                 asteroid.transform.rotation = Quaternion.Euler(asteroidRotation);
 
-                var speed = Random.Range(speeds.maxSpeed, speeds.maxSpeed);
-                asteroid.GetComponent<Asteroid>().Init(mConfiguration.asteroidStartLevel, speed);
+                var speed = Random.Range(asteroidLevelData.maxSpeed, asteroidLevelData.maxSpeed);
+                asteroid.GetComponent<Asteroid>().Init(mConfiguration.asteroidStartLevel, speed, asteroidLevelData.scale);
 
                 asteroid.gameObject.SetActive(true);
             }
@@ -328,15 +328,13 @@ namespace Game
             mAudioManager.Play(Constants.AudioKeys.cExplosion, AudioGroup.Sfx, false,
                 asteroid.transform.position);
 
-            int[] asteroidRewards = {1000, 500, 100};
-
-            if (projectile.Mode == ProjectileMode.Friendly) AddScore(asteroidRewards[asteroid.Level - 1]);
+            if (projectile.Mode == ProjectileMode.Friendly) AddScore(mConfiguration.asteroidLevels.First(x => x.asteroidLevel == asteroid.Level).reward);
 
             var hitDir = projectile.transform.position - asteroid.transform.position;
 
             if (asteroid.Level > 1) SplitAsteroid(asteroid.Level, asteroid.transform.position, hitDir);
 
-//            if (Random.Range(0, 20) == 0)
+            if (Random.Range(0, 20) == 0)
             {
                 var key = Constants.PoolKeys.cShieldPickup;
                 var pickupIndex = Random.Range(0, 3);
@@ -360,9 +358,8 @@ namespace Game
             mPoolManager.ReturnObject(projectile as BulletController);
             mPoolManager.ReturnObject(asteroid);
 
-            if (asteroid.Level == 1 && !mPoolManager.GetActiveObjects<Asteroid>().Any())
+            if (asteroid.Level == 1 && mPoolManager.GetActiveObjects<Asteroid>().Count == 0)
             {
-                mPoolManager.ReturnObject(mGameMusicSource);
                 this.Raise(OnLevelComplete, new ValueArgs<(int health, int score)>((Health, Score)));
             }
         }
@@ -388,7 +385,6 @@ namespace Game
                 else
                 {
                     Player.GetComponent<EffectHandler>().ClearEffects();
-                    mPoolManager.ReturnObject(mGameMusicSource);
                     this.Raise(OnGameOver, new ValueArgs<int>(Score));
                 }
             }
@@ -399,13 +395,13 @@ namespace Game
             var nextLevel = level - 1;
             var asteroids = mPoolManager.RetrieveObjects<Asteroid>(2);
             var angle = Mathf.Atan2(hitDir.y, hitDir.x) * Mathf.Rad2Deg;
-            var speeds = mConfiguration.asteroidLevels.First(x => x.asteroidLevel == nextLevel);
+            var asteroidLevelData = mConfiguration.asteroidLevels.First(x => x.asteroidLevel == nextLevel);
 
             foreach (var asteroidObject in asteroids)
             {
                 var asteroid = asteroidObject.GetComponent<Asteroid>();
 
-                asteroid.Init(nextLevel, Random.Range(speeds.minSpeed, speeds.maxSpeed));
+                asteroid.Init(nextLevel, Random.Range(asteroidLevelData.minSpeed, asteroidLevelData.maxSpeed), asteroidLevelData.scale);
                 asteroidObject.transform.position = spawnPos;
                 asteroidObject.gameObject.SetActive(true);
             }

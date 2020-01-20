@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Game;
 using ObjectGenerators;
 using ScriptableObjects;
@@ -126,15 +125,19 @@ namespace Managers
         #region FSM Handlers
         private void StartInitialisation()
         {
-            levels = Resources.LoadAll(Constants.ResourcePaths.cLevelsFolder, typeof(LevelData)).Select(x => x as LevelData)
-                .ToArray();
+            var levelsObjs = Resources.LoadAll(Constants.ResourcePaths.cLevelsFolder, typeof(LevelData));
+            levels = new LevelData[levelsObjs.Length];
+            for (int i = 0; i < levelsObjs.Length; i++)
+            {
+                levels[i] = (LevelData) levelsObjs[i];
+            }
 
             CreatePoolManager();
             audioManager.Init(poolManager);
             uiManager.Init();
 
             inputManager.Init(Config.ControlScheme);
-
+            inputManager.DisableVisuals();
             levelManager.Init(poolManager, audioManager, Config);
             levelManager.OnGameOver += OnGameOver;
             levelManager.OnLevelComplete += OnLevelCompleted;
@@ -144,8 +147,6 @@ namespace Managers
         
         private void OpenMainMenu()
         {
-            inputManager.DisableVisuals();
-
             uiManager.ShowMainMenu();
 
             mCurrentLevelIndex = 0;
@@ -173,6 +174,7 @@ namespace Managers
 
         private void EndGame()
         {
+            inputManager.DisableVisuals();
             levelManager.Clear();
             uiManager.HideGameUI();
         }

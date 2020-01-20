@@ -30,6 +30,8 @@ namespace ScriptableObjects
         
         public float saucerShotRandomisation = 15;
 
+        public int flyingSaucerReward = 2000;
+
         [Header("Asteroids", order = 4)] 
         public int asteroidStartLevel = 3;
 

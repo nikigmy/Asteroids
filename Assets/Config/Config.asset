@@ -141,24 +141,28 @@ MonoBehaviour:
     m_ColorMin: {r: 0, g: 0, b: 0, a: 0}
     m_ColorMax: {r: 0, g: 0, b: 0, a: 0}
   playerStartEffect:
-    duration: 55
+    duration: 5
     effectType: 1
   flyingSaucerData: {fileID: 11400000, guid: a406325af5b6e8d4688ece2f7a7641ef, type: 2}
   saucerShotRandomisation: 15
+  flyingSaucerReward: 2000
   asteroidStartLevel: 3
   asteroidLevels:
   - asteroidLevel: 3
     minSpeed: 1
     maxSpeed: 2
     scale: 1
+    reward: 100
   - asteroidLevel: 2
     minSpeed: 3
     maxSpeed: 4
     scale: 0.66
+    reward: 500
   - asteroidLevel: 1
     minSpeed: 5
     maxSpeed: 6
     scale: 0.33
+    reward: 1000
   minAsteroidPoints: 10
   maxAsteroidPoints: 15
   minAsteroidRadius: 1.3
@@ -179,4 +183,4 @@ MonoBehaviour:
   audioSourcePool: 10
   bulletPool: 20
   optimalAsteroidPoolPercentage: 70
-  ControlScheme: 0
+  ControlScheme: 1

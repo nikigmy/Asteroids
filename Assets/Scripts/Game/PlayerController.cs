@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Managers;
-using ScriptableObjects;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 using Utils;
 
 namespace Game
@@ -24,7 +23,8 @@ namespace Game
             mEffectHandler = GetComponent<EffectHandler>();
 
             mWrapAround.OnBeginTeleport += BeginTeleport;
-            mEffectHandler.OnEffectsUpdated += EffectsUpdated;
+            mEffectHandler.OnEffectAdded += OnEffectAdded;
+            mEffectHandler.OnEffectExpired += OnEffectExpired;
             
             Debug.Assert(engineParticle != null);   
             Debug.Assert(gunpoint != null);   
@@ -50,8 +50,14 @@ namespace Game
 
             gameObject.SetActive(true);
             DisableTrail();
+            
             transform.position = Vector3.zero;
             transform.rotation = Quaternion.Euler(shipInitialRotation);
+            
+            mAcceleration = mShipData.Acceleration;
+            shieldSpriteRenderer.enabled = false;
+            var engineColor = engineParticle.colorOverLifetime;
+            engineColor.color = GameManager.Instance.Config.engineColor;
 
             mEffectHandler.AddEffect(GameManager.Instance.Config.playerStartEffect);
         }
@@ -69,10 +75,7 @@ namespace Game
             bulletTransform.position = gunpoint.position;
             bulletTransform.rotation = gunpoint.rotation;
 
-            bulletObject.Init(ProjectileMode.Friendly,
-                mEffectHandler.GetCurrentEffects().Contains(Declarations.EffectType.HomingAmmo)
-                    ? ProjectileType.Homing
-                    : ProjectileType.Normal);
+            bulletObject.Init(ProjectileMode.Friendly, mProjectileType);
             bulletObject.gameObject.SetActive(true);
         }
 
@@ -107,11 +110,11 @@ namespace Game
             if (GameManager.Instance.GamePaused || !mActive) return;
 
             var thisTransform = transform;
-            var input = new Vector2(args.Value.x, Mathf.Clamp(args.Value.y, 0, 1));
+            var input = new Vector2(args.Value.x, args.Value.y);
             var dir = input - Vector2.zero;
 
             var targetAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-
+            Debug.LogError(targetAngle);
             var accelerationPower = Mathf.Sqrt(input.y * input.y + input.x * input.x);
             var speed = mShipData.Acceleration * accelerationPower;
             if (mEffectHandler.GetCurrentEffects().Contains(Declarations.EffectType.Speed)) speed *= 1.3f;
@@ -132,16 +135,46 @@ namespace Game
             DisableTrail();
         }
 
-        private void EffectsUpdated(object sender, ValueArgs<Declarations.EffectType[]> e)
+        private void OnEffectAdded(object sender, ValueArgs<Declarations.EffectType> effect)
         {
-            shieldSpriteRenderer.enabled = e.Value.Contains(Declarations.EffectType.Shield);
-
-            var targetColor = e.Value.Contains(Declarations.EffectType.Speed)
-                ? GameManager.Instance.Config.boostedEngineColor
-                : GameManager.Instance.Config.engineColor;
-
-            var engineColor = engineParticle.colorOverLifetime;
-            engineColor.color = targetColor;
+            switch (effect.Value)
+            {
+                case Declarations.EffectType.Speed:
+                    mAcceleration = mShipData.Acceleration * 1.3f;
+                    var engineColor = engineParticle.colorOverLifetime;
+                    engineColor.color = GameManager.Instance.Config.boostedEngineColor;
+                    break;
+                case Declarations.EffectType.Shield:
+                    shieldSpriteRenderer.enabled = true;
+                    break;
+                case Declarations.EffectType.HomingAmmo:
+                    mProjectileType = ProjectileType.Homing;
+                    break;
+                default:
+                    Debug.LogError("Unknown effect type");
+                    break;
+            }
+        }
+        
+        private void OnEffectExpired(object sender, ValueArgs<Declarations.EffectType> effect)
+        {
+            switch (effect.Value)
+            {
+                case Declarations.EffectType.Speed:
+                    mAcceleration = mShipData.Acceleration;
+                    var engineColor = engineParticle.colorOverLifetime;
+                    engineColor.color = GameManager.Instance.Config.engineColor;
+                    break;
+                case Declarations.EffectType.Shield:
+                    shieldSpriteRenderer.enabled = false;
+                    break;
+                case Declarations.EffectType.HomingAmmo:
+                    mProjectileType = ProjectileType.Normal;
+                    break;
+                default:
+                    Debug.LogError("Unknown effect type");
+                    break;
+            }
         }
         
         #endregion
@@ -158,6 +191,10 @@ namespace Game
             yield return new WaitForEndOfFrame();
             engineParticle.Play();
         }
+
+        private ProjectileType mProjectileType;
+
+        private float mAcceleration;
         
         private EffectHandler mEffectHandler;
 

@@ -69,7 +69,7 @@ namespace Managers
             {
                 var clip = mAudioClipDictionary[key][Random.Range(0, mAudioClipDictionary[key].Count)];
                 var audioSource = mPoolManager.RetrieveObject<AudioSource>();
-
+                
                 AudioMixerGroup mixerGroup;
                 if (group == AudioGroup.Music)
                     mixerGroup = musicGroup;

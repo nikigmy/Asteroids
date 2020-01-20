@@ -331,7 +331,7 @@ namespace Managers
             else
             {
                 if (mObjectGenerators.ContainsKey(key))
-                    resultObjects = GenerateObjects<T>(key, count).ToArray();
+                    resultObjects = GenerateObjects<T>(key, count);
                 else
                     Debug.LogError(string.Format("Object generator for key: {0} does not exist", key));
             }

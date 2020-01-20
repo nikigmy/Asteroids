@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using Utils;
-using EffectArgs = Utils.ValueArgs<Utils.Declarations.EffectType[]>;
+using EffectArgs = Utils.ValueArgs<Utils.Declarations.EffectType>;
 
 namespace Game
 {
@@ -11,16 +13,22 @@ namespace Game
     /// </summary>
     public class EffectHandler : MonoBehaviour
     {
-        public event EventHandler<EffectArgs> OnEffectsUpdated;
+        public event EventHandler<EffectArgs> OnEffectAdded;
+        public event EventHandler<EffectArgs> OnEffectExpired;
 
         private void Awake()
         {
-            mCurrentEffects = new List<(Declarations.EffectType type, float expirationTime)>();
+            mCurrentEffects = new Dictionary<Declarations.EffectType, float>();
         }
 
         private void Update()
         {
             ClearExpiredEffects();
+        }
+
+        public bool IsEffectActive(Declarations.EffectType effect)
+        {
+            return mCurrentEffects.ContainsKey(effect);
         }
         
         /// <summary>
@@ -29,9 +37,7 @@ namespace Game
         /// <param name="effect">The effect to add</param>
         public void AddEffect(Declarations.EffectDuration effect)
         {
-            mCurrentEffects.Add((effect.effectType, Time.time + effect.duration));
-
-            this.Raise(OnEffectsUpdated, new EffectArgs(GetCurrentEffects()));
+            AddEffect(effect.effectType, effect.duration);
         }
             
         /// <summary>
@@ -41,9 +47,21 @@ namespace Game
         /// <param name="duration">Effect duration</param>
         public void AddEffect(Declarations.EffectType effectType, float duration)
         {
-            mCurrentEffects.Add((effectType, Time.time + duration));
+            var expirationTime = Time.time + duration;
+            if (mCurrentEffects.ContainsKey(effectType))
+            {
+                var currentEffectExpiration = mCurrentEffects[effectType];
+                if (currentEffectExpiration < expirationTime)
+                {
+                    mCurrentEffects[effectType] = expirationTime;
+                }
+            }
+            else
+            {
+                mCurrentEffects.Add(effectType, expirationTime);
+            }
 
-            this.Raise(OnEffectsUpdated, new EffectArgs(GetCurrentEffects()));
+            this.Raise(OnEffectAdded, new EffectArgs(effectType));
         }
 
         /// <summary>
@@ -52,14 +70,7 @@ namespace Game
         /// <returns>Current effects</returns>
         public Declarations.EffectType[] GetCurrentEffects()
         {
-            var result = new Declarations.EffectType[mCurrentEffects.Count];
-            
-            for (int i = 0; i < mCurrentEffects.Count; i++)
-            {
-                result[i] = mCurrentEffects[i].type;
-            }
-
-            return result;
+            return mCurrentEffects.Keys.ToArray();
         }
 
         /// <summary>
@@ -72,23 +83,22 @@ namespace Game
         
         private void ClearExpiredEffects()
         {
-            bool removed = false;
-            for (var i = 0; i < mCurrentEffects.Count; i++)
+            List<Declarations.EffectType> effectsToRemove = new List<Declarations.EffectType>();
+            foreach (var effect in mCurrentEffects)
             {
-                if (mCurrentEffects[i].expirationTime < Time.time)
+                if (effect.Value < Time.time)
                 {
-                    mCurrentEffects.RemoveAt(i);
-                    i--;
-                    removed = true;
+                    effectsToRemove.Add(effect.Key);
                 }
             }
 
-            if (removed)
+            for (int i = 0; i < effectsToRemove.Count; i++)
             {
-                this.Raise(OnEffectsUpdated, new EffectArgs(GetCurrentEffects()));
+                mCurrentEffects.Remove(effectsToRemove[i]);
+                this.Raise(OnEffectExpired, new EffectArgs(effectsToRemove[i]));
             }
         }
         
-        private List<(Declarations.EffectType type, float expirationTime)> mCurrentEffects;
+        private Dictionary<Declarations.EffectType, float> mCurrentEffects;
     }
 }

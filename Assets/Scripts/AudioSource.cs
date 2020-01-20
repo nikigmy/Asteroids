@@ -31,7 +31,7 @@ public class AudioSource : MonoBehaviour
     }
     
     /// <summary>
-    /// Stop playing sound
+    /// Stop playing audio
     /// </summary>
     public void Stop()
     {

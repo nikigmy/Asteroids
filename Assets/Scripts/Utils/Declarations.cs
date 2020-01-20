@@ -25,6 +25,7 @@ namespace Utils
             public float minSpeed;
             public float maxSpeed;
             public float scale;
+            public int reward;
         }
 
         [Serializable]

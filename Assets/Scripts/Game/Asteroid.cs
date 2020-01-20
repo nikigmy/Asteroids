@@ -22,12 +22,13 @@ namespace Game
         /// </summary>
         /// <param name="level">Level of the asteroid</param>
         /// <param name="speed">Speed of the asteroid</param>
-        public void Init(int level, float speed)
+        /// <param name="scale">Scale of the asteroid</param>
+        public void Init(int level, float speed, float scale)
         {
             mSpeed = speed;
             Level = level;
 
-            transform.localScale = Vector3.one * GameManager.Instance.Config.asteroidLevels.First(x => x.asteroidLevel == level).scale;
+            transform.localScale = Vector3.one * scale;
         }
 
         private float mSpeed;
