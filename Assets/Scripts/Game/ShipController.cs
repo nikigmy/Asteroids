@@ -32,6 +32,7 @@ namespace Game
         /// <param name="data">Data of the ship</param>
         public virtual void Init(ShipData data)
         {
+            mAudioManager = GameManager.Instance.AudioManager;
             mShipData = data;
             mActive = true;
         }
@@ -67,10 +68,12 @@ namespace Game
         /// </summary>
         protected virtual void Shoot()
         {
-            GameManager.instance.AudioManager.Play(Constants.AudioKeys.lazerBlast, AudioGroup.Sfx, false,
+            mAudioManager.Play(Constants.AudioKeys.cLazerBlast, AudioGroup.Sfx, false,
                 transform.position);
         }
 
+        private AudioManager mAudioManager;
+        
         protected bool mActive;
         
         protected float mLastBulletTime;

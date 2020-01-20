@@ -5,6 +5,10 @@ using UnityEngine;
 
 namespace ObjectGenerators
 {
+    /// <summary>
+    /// Object generator for standard components
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class GenericObjectGenerator<T> : IObjectGenerator<T> where T : Component
     {
         private readonly T templateObject;
@@ -16,6 +20,7 @@ namespace ObjectGenerators
             templateObject = template.AddComponent<T>();
         }
 
+        /// <param name="prefabPath">Path of the object to generate</param>
         public GenericObjectGenerator(string prefabPath)
         {
             templateObject = Utils.Utils.LoadObject<T>(prefabPath);
@@ -31,7 +36,7 @@ namespace ObjectGenerators
 
             var collisionReporter = obj.GetComponent<CollisionReporter>();
             if (collisionReporter != null)
-                GameManager.instance.LevelManager.CollisionManager.RegisterCollisionReporter(collisionReporter);
+                GameManager.Instance.LevelManager.CollisionManager.RegisterCollisionReporter(collisionReporter);
 
             return obj;
         }
@@ -49,7 +54,7 @@ namespace ObjectGenerators
 
                 var collisionReporter = obj.GetComponent<CollisionReporter>();
                 if (collisionReporter != null)
-                    GameManager.instance.LevelManager.CollisionManager.RegisterCollisionReporter(collisionReporter);
+                    GameManager.Instance.LevelManager.CollisionManager.RegisterCollisionReporter(collisionReporter);
 
                 result[i] = obj;
             }

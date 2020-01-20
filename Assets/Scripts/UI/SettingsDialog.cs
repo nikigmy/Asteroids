@@ -6,28 +6,44 @@ namespace UI
 {
     public class SettingsDialog : Dialog
     {
-        private AudioManager audioManager;
-        [SerializeField] private Slider musicSlider;
-        [SerializeField] private Slider sfxSlider;
+        private void Awake()
+        {
+            Debug.Assert(musicSlider);
+            Debug.Assert(musicSlider);
+        }
 
         public override void Open()
         {
-            audioManager = GameManager.instance.AudioManager;
+            mAudioManager = GameManager.Instance.AudioManager;
 
-            musicSlider.value = audioManager.GetVolume(AudioManager.AudioGroup.Music);
-            sfxSlider.value = audioManager.GetVolume(AudioManager.AudioGroup.Sfx);
+            musicSlider.value = mAudioManager.GetVolume(AudioGroup.Music);
+            sfxSlider.value = mAudioManager.GetVolume(AudioGroup.Sfx);
 
             gameObject.SetActive(true);
         }
 
+        /// <summary>
+        /// Event handler for music slider
+        /// </summary>
+        /// <param name="value">Slider value</param>
         public void OnMusicVolumeChanged(float value)
         {
-            audioManager.SetVolume(AudioManager.AudioGroup.Music, value);
+            mAudioManager.SetVolume(AudioGroup.Music, value);
         }
-
+        
+        /// <summary>
+        /// Event handler for sfx slider
+        /// </summary>
+        /// <param name="value">Slider value</param>
         public void OnSfxVolumeChanged(float value)
         {
-            audioManager.SetVolume(AudioManager.AudioGroup.Sfx, value);
+            mAudioManager.SetVolume(AudioGroup.Sfx, value);
         }
+
+        private AudioManager mAudioManager;
+        
+        [SerializeField] private Slider musicSlider;
+        
+        [SerializeField] private Slider sfxSlider;
     }
 }

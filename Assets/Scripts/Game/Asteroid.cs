@@ -1,4 +1,5 @@
-﻿using Managers;
+﻿using System.Linq;
+using Managers;
 using UnityEngine;
 
 namespace Game
@@ -6,6 +7,7 @@ namespace Game
     /// <summary>
     /// Behaviour of asteroids
     /// </summary>
+    [RequireComponent(typeof(LineRenderer), typeof(PolygonCollider2D), typeof(CollisionReporter))]
     public class Asteroid : MonoBehaviour
     {
         public int Level { get; private set; }
@@ -25,7 +27,7 @@ namespace Game
             mSpeed = speed;
             Level = level;
 
-            transform.localScale = Vector3.one * GameManager.instance.Config.asteroidScaleLevels[level - 1];
+            transform.localScale = Vector3.one * GameManager.Instance.Config.asteroidLevels.First(x => x.asteroidLevel == level).scale;
         }
 
         private float mSpeed;

@@ -9,16 +9,21 @@ namespace Managers
     /// </summary>
     public class InputManager : MonoBehaviour
     {
+        private void Awake()
+        {
+            Debug.Assert(inputControllerMap != null);
+        }
+
         /// <summary>
         /// Initialise the manager
         /// </summary>
         /// <param name="controlScheme">Control scheme to use</param>
         public void Init(Declarations.ControlScheme controlScheme)
         {
-            for (var i = 0; i < mInputControllerMap.Length; i++)
-                if (mInputControllerMap[i].ControlScheme == controlScheme)
+            for (var i = 0; i < inputControllerMap.Length; i++)
+                if (inputControllerMap[i].controlScheme == controlScheme)
                 {
-                    mInputControllerObj = Instantiate(mInputControllerMap[i].InputControllerPrefab, transform);
+                    mInputControllerObj = Instantiate(inputControllerMap[i].inputControllerPrefab, transform);
                     mInputController = mInputControllerObj.GetComponent<IInputController>();
                     if (mInputController != null)
                         mInputController.Init();
@@ -59,6 +64,6 @@ namespace Managers
         private IInputController mInputController;
         private GameObject mInputControllerObj;
 
-        [SerializeField] private Declarations.ControlSchemeInputPair[] mInputControllerMap;
+        [SerializeField] private Declarations.ControlSchemeInputPair[] inputControllerMap;
     }
 }

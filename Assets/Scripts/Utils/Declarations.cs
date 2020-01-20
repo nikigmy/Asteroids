@@ -19,11 +19,12 @@ namespace Utils
         }
 
         [Serializable]
-        public class AsteroidSpeed
+        public class AsteroidLevel
         {
             public int asteroidLevel;
-            public float maxSpeed;
             public float minSpeed;
+            public float maxSpeed;
+            public float scale;
         }
 
         [Serializable]
@@ -36,15 +37,15 @@ namespace Utils
         [Serializable]
         public class ControlSchemeInputPair
         {
-            public ControlScheme ControlScheme;
-            public GameObject InputControllerPrefab;
+            public ControlScheme controlScheme;
+            public GameObject inputControllerPrefab;
         }
 
         [Serializable]
         public class AudioData
         {
-            public AudioClip[] Clips;
-            public string Key;
+            public string key;
+            public AudioClip[] clips;
         }
     }
 }

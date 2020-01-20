@@ -4,52 +4,64 @@
     {
         public class Tags
         {
-            public const string player = "Player";
-            public const string boundary = "Boundary";
-            public const string projectile = "Projectile";
-            public const string asteroid = "Asteroid";
-            public const string enemy = "Enemy";
-            public const string pickup = "Pickup";
+            public const string cPlayer = "Player";
+            public const string cBoundary = "Boundary";
+            public const string cProjectile = "Projectile";
+            public const string cAsteroid = "Asteroid";
+            public const string cEnemy = "Enemy";
+            public const string cPickup = "Pickup";
         }
 
+        /// <summary>
+        /// Resource paths of prefabs
+        /// </summary>
         public class ResourcePaths
         {
-            public const string uiHearthPrefabPath = "Prefabs/UI/Heart";
-            public const string asteroidPrefabPath = "Prefabs/Gameplay/Asteroid";
-            public const string bulletPrefabPath = "Prefabs/Gameplay/Bullet";
-            public const string flyingSaucerPrefabPath = "Prefabs/Gameplay/FlyingSaucer";
-            public const string shipPrefabPath = "Prefabs/Gameplay/Ship";
-            public const string shieldPickup = "Prefabs/Gameplay/Pickups/ShieldPickup";
-            public const string speedBoostPickup = "Prefabs/Gameplay/Pickups/SpeedBoostPickup";
-            public const string homingAmmoPickup = "Prefabs/Gameplay/Pickups/HomingAmmoPickup";
+            public const string cUiHearthPrefabPath = "Prefabs/UI/Heart";
+            public const string cAsteroidPrefabPath = "Prefabs/Gameplay/Asteroid";
+            public const string cBulletPrefabPath = "Prefabs/Gameplay/Bullet";
+            public const string cFlyingSaucerPrefabPath = "Prefabs/Gameplay/FlyingSaucer";
+            public const string cShipPrefabPath = "Prefabs/Gameplay/Ship";
+            public const string cShieldPickup = "Prefabs/Gameplay/Pickups/ShieldPickup";
+            public const string cSpeedBoostPickup = "Prefabs/Gameplay/Pickups/SpeedBoostPickup";
+            public const string cHomingAmmoPickup = "Prefabs/Gameplay/Pickups/HomingAmmoPickup";
 
-            public const string levelsFolder = "Levels";
+            public const string cLevelsFolder = "Levels";
         }
 
+        /// <summary>
+        /// Keys for the pool manager
+        /// </summary>
         public class PoolKeys
         {
-            public const string heart = "Heart";
-            public const string shieldPickup = "ShieldPickup";
-            public const string speedBoostPickup = "SpeedBoostPickup";
-            public const string homingAmmoPickup = "HomingAmmoPickup";
+            public const string cHeart = "Heart";
+            public const string cShieldPickup = "ShieldPickup";
+            public const string cSpeedBoostPickup = "SpeedBoostPickup";
+            public const string cHomingAmmoPickup = "HomingAmmoPickup";
         }
 
+        /// <summary>
+        /// Keys for player prefs
+        /// </summary>
         public class SaveKeys
         {
-            public const string highScore = "HighScore";
-            public const string musicVolume = "MusicVolume";
-            public const string sfxVolume = "SfxVolume";
+            public const string cHighScore = "HighScore";
+            public const string cMusicVolume = "MusicVolume";
+            public const string cSfxVolume = "SfxVolume";
         }
 
+        /// <summary>
+        /// Keys of audio dictionary
+        /// </summary>
         public class AudioKeys
         {
-            public const string lazerBlast = "LazerBlast";
-            public const string explosion = "Explosion";
-            public const string pickup = "Pickup";
-            public const string menuMusic = "MenuMusic";
-            public const string gameMusic = "GameMusic";
-            public const string gameOver = "GameOver";
-            public const string gameComplete = "GameComplete";
+            public const string cLazerBlast = "LazerBlast";
+            public const string cExplosion = "Explosion";
+            public const string cPickup = "Pickup";
+            public const string cMenuMusic = "MenuMusic";
+            public const string cGameMusic = "GameMusic";
+            public const string cGameOver = "GameOver";
+            public const string cGameComplete = "GameComplete";
         }
     }
 }

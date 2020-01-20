@@ -9,15 +9,21 @@ namespace UI
 {
     public class GameUI : MonoBehaviour
     {
-        [SerializeField] private Transform heartContainer;
-        private LevelManager levelManager;
-        [SerializeField] private TextMeshProUGUI levelText;
-        [SerializeField] private TextMeshProUGUI scoreText;
+        private void Awake()
+        {
+            Debug.Assert(heartContainer != null);
+            Debug.Assert(levelText != null);
+            Debug.Assert(scoreText != null);
+        }
 
+        /// <summary>
+        /// Show the game UI
+        /// </summary>
+        /// <param name="levelManager">Level manager</param>
         public void Show(LevelManager levelManager)
         {
             gameObject.SetActive(true);
-            this.levelManager = levelManager;
+            this.mLevelManager = levelManager;
 
             levelManager.OnHealthChanged += OnHealthChanged;
             levelManager.OnScoreChanged += OnScoreChanged;
@@ -26,6 +32,30 @@ namespace UI
             UpdateHearths(levelManager.Health);
             UpdateScore(levelManager.Score);
             UpdateLevelNumber();
+        }
+        
+        /// <summary>
+        /// Hide the game UI
+        /// </summary>
+        public void Hide()
+        {
+            gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Event handler for the settings button
+        /// </summary>
+        public void OnSettingButtonClicked()
+        {
+            GameManager.Instance.UIManager.OpenSetting();
+        }
+        
+        /// <summary>
+        /// Event handler for the main menu button
+        /// </summary>
+        public void OnMainMenuClicked()
+        {
+            GameManager.Instance.LoadMainMenu();
         }
 
         private void OnLevelStarted(object sender, EventArgs eventArgs)
@@ -45,12 +75,12 @@ namespace UI
 
         private void UpdateLevelNumber()
         {
-            levelText.text = "Level: " + GameManager.instance.CurrentLevelNumber;
+            levelText.text = "Level: " + GameManager.Instance.CurrentLevelNumber;
         }
 
         private void UpdateScore(int score)
         {
-            scoreText.text = "Score: " + levelManager.Score;
+            scoreText.text = "Score: " + mLevelManager.Score;
         }
 
         private void UpdateHearths(int health)
@@ -61,13 +91,13 @@ namespace UI
                 for (var i = hearts - 1; i > health - 1; i--)
                 {
                     var child = heartContainer.GetChild(i).gameObject;
-                    GameManager.instance.PoolManager.ReturnObject(Constants.PoolKeys.heart, child);
+                    GameManager.Instance.PoolManager.ReturnObject(Constants.PoolKeys.cHeart, child);
                 }
             }
             else if (health > hearts)
             {
                 var heartObjects =
-                    GameManager.instance.PoolManager.RetrieveObjects<GameObject>(Constants.PoolKeys.heart, health - hearts);
+                    GameManager.Instance.PoolManager.RetrieveObjects<GameObject>(Constants.PoolKeys.cHeart, health - hearts);
                 for (var i = 0; i < health - hearts; i++)
                 {
                     heartObjects[i].transform.parent = heartContainer;
@@ -75,26 +105,14 @@ namespace UI
                 }
             }
         }
+        
+        private LevelManager mLevelManager;
+        
+        [SerializeField] private Transform heartContainer;
+        
+        [SerializeField] private TextMeshProUGUI levelText;
+        
+        [SerializeField] private TextMeshProUGUI scoreText;
 
-        public void OnSettingButtonClicked()
-        {
-            OpenSettings();
-        }
-
-        private void OpenSettings()
-        {
-            GameManager.instance.UIManager.OpenSetting();
-        }
-
-
-        public void OnMainMenuClicked()
-        {
-            GameManager.instance.LoadMainMenu();
-        }
-
-        public void Hide()
-        {
-            gameObject.SetActive(false);
-        }
     }
 }

@@ -5,10 +5,14 @@ using UnityEngine;
 
 namespace ObjectGenerators
 {
+    /// <summary>
+    /// Generator for game objects
+    /// </summary>
     public sealed class ObjectGenerator : IObjectGenerator<GameObject>
     {
         private readonly GameObject templateObject;
 
+        /// <param name="prefabPath">Path of the object to generate</param>
         public ObjectGenerator(string prefabPath)
         {
             templateObject = Utils.Utils.LoadObject(prefabPath);
@@ -24,7 +28,7 @@ namespace ObjectGenerators
 
             var collisionReporter = obj.GetComponent<CollisionReporter>();
             if (collisionReporter != null)
-                GameManager.instance.LevelManager.CollisionManager.RegisterCollisionReporter(collisionReporter);
+                GameManager.Instance.LevelManager.CollisionManager.RegisterCollisionReporter(collisionReporter);
 
             return obj;
         }
@@ -42,7 +46,7 @@ namespace ObjectGenerators
 
                 var collisionReporter = obj.GetComponent<CollisionReporter>();
                 if (collisionReporter != null)
-                    GameManager.instance.LevelManager.CollisionManager.RegisterCollisionReporter(collisionReporter);
+                    GameManager.Instance.LevelManager.CollisionManager.RegisterCollisionReporter(collisionReporter);
 
                 result[i] = obj;
             }

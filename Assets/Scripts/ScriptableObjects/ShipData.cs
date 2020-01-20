@@ -2,6 +2,9 @@
 
 namespace ScriptableObjects
 {
+    /// <summary>
+    /// Data holder for ship stats
+    /// </summary>
     [CreateAssetMenu(fileName = "ShipData", menuName = "ScriptableObjects/ShipData", order = 3)]
     public class ShipData : ScriptableObject
     {

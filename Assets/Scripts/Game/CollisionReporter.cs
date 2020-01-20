@@ -30,36 +30,66 @@ namespace Game
             this.Raise(TriggerExit, new CollisionArgs(Tuple.Create(GetComponent<Collider2D>(), data)));
         }
 
+        /// <summary>
+        /// Subscribe to collision enter
+        /// </summary>
+        /// <param name="handler">Collision handler</param>
+        /// <returns>this</returns>
         public CollisionReporter CallOnEnter(EventHandler<CollisionArgs> handler)
         {
             TriggerEnter += handler;
             return this;
         }
 
+        /// <summary>
+        /// Subscribe to collision stay
+        /// </summary>
+        /// <param name="handler">Collision handler</param>
+        /// <returns>this</returns>
         public CollisionReporter CallOnStay(EventHandler<CollisionArgs> handler)
         {
             TriggerStay += handler;
             return this;
         }
 
+        /// <summary>
+        /// Subscribe to collision exit
+        /// </summary>
+        /// <param name="handler">Collision handler</param>
+        /// <returns>this</returns>
         public CollisionReporter CallOnExit(EventHandler<CollisionArgs> handler)
         {
             TriggerExit += handler;
             return this;
         }
 
+        /// <summary>
+        /// Unubscribe to collision enter
+        /// </summary>
+        /// <param name="handler">Collision handler</param>
+        /// <returns>this</returns>
         public CollisionReporter UnsubscribeOnEnter(EventHandler<CollisionArgs> handler)
         {
             TriggerEnter -= handler;
             return this;
         }
 
+        /// <summary>
+        /// Unsubscribe to collision stay
+        /// </summary>
+        /// <param name="handler">Collision handler</param>
+        /// <returns>this</returns>
         public CollisionReporter UnsubscribeOnStay(EventHandler<CollisionArgs> handler)
         {
             TriggerStay -= handler;
             return this;
         }
 
+        /// <summary>
+        /// Unsubscribe to collision exit
+        /// </summary>
+        /// <param name="handler">Collision handler</param>
+        /// <returns>this</returns>
         public CollisionReporter UnsubscribeOnExit(EventHandler<CollisionArgs> handler)
         {
             TriggerExit -= handler;

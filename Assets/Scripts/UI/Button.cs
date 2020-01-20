@@ -5,34 +5,37 @@ using Utils;
 
 namespace UI
 {
+    /// <summary>
+    /// Extends the standard unity button with additional event
+    /// </summary>
     public class Button : UnityEngine.UI.Button, IButtonInput
     {
-        private bool pressed;
-
         public event EventHandler<EventArgs> OnButtonInput;
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            pressed = false;
+            mPressed = false;
         }
 
         private void Update()
         {
-            if (pressed) this.Raise(OnButtonInput, EventArgs.Empty);
+            if (mPressed) this.Raise(OnButtonInput, EventArgs.Empty);
         }
 
         public override void OnPointerDown(PointerEventData eventData)
         {
-            pressed = true;
+            mPressed = true;
             base.OnPointerDown(eventData);
             this.Raise(OnButtonInput, EventArgs.Empty);
         }
 
         public override void OnPointerUp(PointerEventData eventData)
         {
-            pressed = false;
+            mPressed = false;
             base.OnPointerUp(eventData);
         }
+
+        private bool mPressed;
     }
 }

@@ -3,6 +3,7 @@ using ScriptableObjects;
 using UnityEngine;
 using UnityEngine.Audio;
 using Utils;
+using Random = UnityEngine.Random;
 
 namespace Managers
 {
@@ -19,7 +20,15 @@ namespace Managers
     {
         private const string cMusicVolume = "MusicVolume";
         private const string cSfxVolume = "SfxVolume";
-        
+
+        private void Awake()
+        {
+            Debug.Assert(repository != null);
+            Debug.Assert(audioMixer != null);
+            Debug.Assert(musicGroup != null);
+            Debug.Assert(sfxGroup != null);
+        }
+
         /// <summary>
         /// Initialise the manager
         /// </summary>
@@ -28,20 +37,20 @@ namespace Managers
         {
             mAudioClipDictionary = new Dictionary<string, List<AudioClip>>();
             mPoolManager = poolManager;
-            mAudioMixer.SetFloat(cMusicVolume, PlayerPrefs.GetFloat(Constants.SaveKeys.musicVolume, 0));
-            mAudioMixer.SetFloat(cSfxVolume, PlayerPrefs.GetFloat(Constants.SaveKeys.sfxVolume, 0));
+            audioMixer.SetFloat(cMusicVolume, PlayerPrefs.GetFloat(Constants.SaveKeys.cMusicVolume, 0));
+            audioMixer.SetFloat(cSfxVolume, PlayerPrefs.GetFloat(Constants.SaveKeys.cSfxVolume, 0));
 
-            for (var i = 0; i < mRepository.AudioDatas.Count; i++)
+            for (var i = 0; i < repository.AudioDatas.Count; i++)
             {
-                var audioData = mRepository.AudioDatas[i];
-                if (!mAudioClipDictionary.ContainsKey(audioData.Key))
+                var audioData = repository.AudioDatas[i];
+                if (!mAudioClipDictionary.ContainsKey(audioData.key))
                 {
-                    mAudioClipDictionary.Add(audioData.Key, new List<AudioClip>(audioData.Clips));
+                    mAudioClipDictionary.Add(audioData.key, new List<AudioClip>(audioData.clips));
                 }
                 else
                 {
-                    mAudioClipDictionary[audioData.Key].AddRange(audioData.Clips);
-                    Debug.LogError("Duplicating audio key: " + audioData.Key);
+                    mAudioClipDictionary[audioData.key].AddRange(audioData.clips);
+                    Debug.LogError("Duplicating audio key: " + audioData.key);
                 }
             }
         }
@@ -63,9 +72,9 @@ namespace Managers
 
                 AudioMixerGroup mixerGroup;
                 if (group == AudioGroup.Music)
-                    mixerGroup = mMusicGroup;
+                    mixerGroup = musicGroup;
                 else
-                    mixerGroup = mSfxGroup;
+                    mixerGroup = sfxGroup;
 
                 audioSource.gameObject.SetActive(true);
                 audioSource.transform.position = position;
@@ -87,13 +96,13 @@ namespace Managers
         {
             if (group == AudioGroup.Music)
             {
-                PlayerPrefs.SetFloat(Constants.SaveKeys.musicVolume, volume);
-                mAudioMixer.SetFloat(cMusicVolume, volume);
+                PlayerPrefs.SetFloat(Constants.SaveKeys.cMusicVolume, volume);
+                audioMixer.SetFloat(cMusicVolume, volume);
             }
             else
             {
-                PlayerPrefs.SetFloat(Constants.SaveKeys.sfxVolume, volume);
-                mAudioMixer.SetFloat(cSfxVolume, volume);
+                PlayerPrefs.SetFloat(Constants.SaveKeys.cSfxVolume, volume);
+                audioMixer.SetFloat(cSfxVolume, volume);
             }
         }
 
@@ -107,9 +116,9 @@ namespace Managers
             float result;
 
             if (group == AudioGroup.Music)
-                mAudioMixer.GetFloat(cMusicVolume, out result);
+                audioMixer.GetFloat(cMusicVolume, out result);
             else
-                mAudioMixer.GetFloat(cSfxVolume, out result);
+                audioMixer.GetFloat(cSfxVolume, out result);
 
             return result;
         }
@@ -118,12 +127,12 @@ namespace Managers
 
         private PoolManager mPoolManager;
 
-        [SerializeField] private AudioRepository mRepository;
+        [SerializeField] private AudioRepository repository;
         
-        [SerializeField] private AudioMixer mAudioMixer;
+        [SerializeField] private AudioMixer audioMixer;
         
-        [SerializeField] private AudioMixerGroup mMusicGroup;
+        [SerializeField] private AudioMixerGroup musicGroup;
         
-        [SerializeField] private AudioMixerGroup mSfxGroup;
+        [SerializeField] private AudioMixerGroup sfxGroup;
     }
 }

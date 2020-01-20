@@ -9,10 +9,10 @@ namespace Utils
         public const int cUndefinedState = -1;
         public const int cUndefinedAction = -1;
 
-        private static readonly Dictionary<Type, FSMDescriptor> s_instances = new Dictionary<Type, FSMDescriptor>();
+        private static readonly Dictionary<Type, FSMDescriptor> mInstances = new Dictionary<Type, FSMDescriptor>();
 
-        private readonly Dictionary<int, string> m_states = new Dictionary<int, string>();
-        private readonly List<TransitionInfo> m_transitions = new List<TransitionInfo>();
+        private readonly Dictionary<int, string> mStates = new Dictionary<int, string>();
+        private readonly List<TransitionInfo> mTransitions = new List<TransitionInfo>();
 
         /// <summary>
         /// Contains the data that defines a transition
@@ -47,8 +47,8 @@ namespace Utils
         public static T GetInstance<T>() where T : FSMDescriptor, new()
         {
             var type = typeof(T);
-            if (s_instances.ContainsKey(type) == false) s_instances.Add(type, new T());
-            return (T) s_instances[type];
+            if (mInstances.ContainsKey(type) == false) mInstances.Add(type, new T());
+            return (T) mInstances[type];
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Utils
         /// <returns>The number of states</returns>
         public int GetStatesCount()
         {
-            return m_states.Count;
+            return mStates.Count;
         }
         
         /// <summary>
@@ -89,10 +89,10 @@ namespace Utils
         /// <returns>The reference to the transition if existing, null otherwise</returns>
         public TransitionInfo GetTransition(int actionID, int fromStateID)
         {
-            Debug.Assert(m_states.ContainsKey(fromStateID),
+            Debug.Assert(mStates.ContainsKey(fromStateID),
                 string.Format("The FSM description doesn't contain a state '{0}'", fromStateID));
 
-            return m_transitions.Find(item => item.mActionID == actionID && item.mFromState == fromStateID);
+            return mTransitions.Find(item => item.mActionID == actionID && item.mFromState == fromStateID);
         }
         
         /// <summary>
@@ -102,7 +102,7 @@ namespace Utils
         /// <returns>Whether the state exists or not</returns>
         public bool HasState(int stateID)
         {
-            return m_states.ContainsKey(stateID);
+            return mStates.ContainsKey(stateID);
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Utils
         /// <returns>The name of the state</returns>
         public string GetStateName(int stateID)
         {
-            return m_states.GetValueOrDefault(stateID, string.Empty);
+            return mStates.GetValueOrDefault(stateID, string.Empty);
         }
 
         #endregion
@@ -126,7 +126,7 @@ namespace Utils
         /// <param name="stateName">The name of the state</param>
         private void AddState(int stateID, string stateName)
         {
-            if (m_states.ContainsKey(stateID) == false) m_states.Add(stateID, stateName);
+            if (mStates.ContainsKey(stateID) == false) mStates.Add(stateID, stateName);
         }
 
         /// <summary>
@@ -137,9 +137,9 @@ namespace Utils
         /// <param name="toStateID">The ID of the destination state</param>
         private void AddTransitionInfo(int actionID, int fromStateID, int toStateID)
         {
-            Debug.Assert(m_states.ContainsKey(fromStateID),
+            Debug.Assert(mStates.ContainsKey(fromStateID),
                 string.Format("The FSM description doesn't contain a state with id {0}", fromStateID));
-            Debug.Assert(m_states.ContainsKey(toStateID),
+            Debug.Assert(mStates.ContainsKey(toStateID),
                 string.Format("The FSM description doesn't contain a state with id {0}", toStateID));
 
             var transition = GetTransition(actionID, fromStateID);
@@ -147,7 +147,7 @@ namespace Utils
                 string.Format("The FSM already contains a transition from state {0} with action {1}", fromStateID,
                     actionID));
 
-            if (transition == null) m_transitions.Add(new TransitionInfo(actionID, fromStateID, toStateID));
+            if (transition == null) mTransitions.Add(new TransitionInfo(actionID, fromStateID, toStateID));
         }
 
         #endregion

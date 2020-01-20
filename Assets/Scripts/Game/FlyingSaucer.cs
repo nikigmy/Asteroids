@@ -12,7 +12,7 @@ namespace Game
 
         protected override void Update()
         {
-            if (GameManager.instance.GamePaused || !mActive) return;
+            if (GameManager.Instance.GamePaused || !mActive) return;
 
             AddVelocity();
             base.Update();
@@ -36,14 +36,15 @@ namespace Game
             base.Shoot();
             mLastBulletTime = Time.realtimeSinceStartup;
 
-            var bulletObject = GameManager.instance.PoolManager.RetrieveObject<BulletController>();
+            var levelManager = GameManager.Instance.LevelManager;
+            var bulletObject = GameManager.Instance.PoolManager.RetrieveObject<BulletController>();
             var bulletTransform = bulletObject.transform;
 
-            var player = GameManager.instance.LevelManager.Player;
+            var player = levelManager.Player;
             var position = transform.position;
-            var dir = Utils.Utils.GetClosestPosition(position, player.transform.position) - position;
+            var dir = Utils.Utils.GetClosestPosition(position, player.transform.position, levelManager.FieldSize) - position;
 
-            var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg + Utils.Utils.GenerateRandomValue(0, GameManager.instance.Config.saucerShotRandomisation);
+            var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg + Utils.Utils.GenerateRandomValue(0, GameManager.Instance.Config.saucerShotRandomisation);
 
             bulletTransform.position = position + dir.normalized * cProjectileOffset;
             bulletTransform.rotation = Quaternion.Euler(Vector3.forward * angle);

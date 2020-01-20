@@ -6,24 +6,33 @@ namespace UI
 {
     public class MainMenu : MonoBehaviour
     {
-        private AudioSource menuMusicSource;
-
+        /// <summary>
+        /// Show the main menu
+        /// </summary>
         public void Show()
         {
-            menuMusicSource = GameManager.instance.AudioManager.Play(Constants.AudioKeys.menuMusic,
+            mMenuMusicSource = GameManager.Instance.AudioManager.Play(Constants.AudioKeys.cMenuMusic,
                 AudioGroup.Music, true, Vector3.zero);
             gameObject.SetActive(true);
         }
-
-        public void StartClicked()
-        {
-            GameManager.instance.StartGame();
-        }
-
+        
+        /// <summary>
+        /// Hide the main menu
+        /// </summary>
         public void Hide()
         {
-            GameManager.instance.PoolManager.ReturnObject(menuMusicSource);
+            GameManager.Instance.PoolManager.ReturnObject(mMenuMusicSource);
             gameObject.SetActive(false);
         }
+        
+        /// <summary>
+        /// Event handler for the start button
+        /// </summary>
+        public void StartClicked()
+        {
+            GameManager.Instance.StartGame();
+        }
+        
+        private AudioSource mMenuMusicSource;
     }
 }

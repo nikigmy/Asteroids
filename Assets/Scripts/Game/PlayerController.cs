@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Managers;
+using ScriptableObjects;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 using Utils;
 
 namespace Game
@@ -15,22 +16,29 @@ namespace Game
     public class PlayerController : ShipController
     {
         private readonly Vector3 shipInitialRotation = new Vector3(0, 0, 90);
-        
-        protected virtual void Start()
+
+        protected override void Awake()
         {
+            base.Awake();
             mWrapAround = GetComponent<WrapAroundObject>();
             mEffectHandler = GetComponent<EffectHandler>();
 
             mWrapAround.OnBeginTeleport += BeginTeleport;
+            mEffectHandler.OnEffectsUpdated += EffectsUpdated;
+            
+            Debug.Assert(engineParticle != null);   
+            Debug.Assert(gunpoint != null);   
+            Debug.Assert(shieldSpriteRenderer != null);   
+        }
 
-            var inputController = GameManager.instance.InputManager.GetInputController();
-            if (GameManager.instance.Config.ControlScheme == Declarations.ControlScheme.Desktop)
+        protected virtual void Start()
+        {
+            var inputController = GameManager.Instance.InputManager.GetInputController();
+            if (GameManager.Instance.Config.ControlScheme == Declarations.ControlScheme.Desktop)
                 inputController.GetDirectionalInput().OnDirectinalInput += ProcessDesktopDirectionalInput;
             else
                 inputController.GetDirectionalInput().OnDirectinalInput += ProcessMobileDirectionalInput;
             inputController.GetFireInput().OnButtonInput += OnFireInput;
-
-            mEffectHandler.OnEffectsUpdated += EffectsUpdated;
         }
 
         /// <summary>
@@ -45,9 +53,9 @@ namespace Game
             transform.position = Vector3.zero;
             transform.rotation = Quaternion.Euler(shipInitialRotation);
 
-            mEffectHandler.AddEffect(GameManager.instance.Config.playerStartEffect);
+            mEffectHandler.AddEffect(GameManager.Instance.Config.playerStartEffect);
         }
-
+        
         /// <summary>
         /// Shoots a bullet
         /// </summary>
@@ -55,11 +63,11 @@ namespace Game
         {
             base.Shoot();
             mLastBulletTime = Time.realtimeSinceStartup;
-            var bulletObject = GameManager.instance.PoolManager.RetrieveObject<BulletController>();
+            var bulletObject = GameManager.Instance.PoolManager.RetrieveObject<BulletController>();
             var bulletTransform = bulletObject.transform;
 
-            bulletTransform.position = mGunpoint.position;
-            bulletTransform.rotation = mGunpoint.rotation;
+            bulletTransform.position = gunpoint.position;
+            bulletTransform.rotation = gunpoint.rotation;
 
             bulletObject.Init(ProjectileMode.Friendly,
                 mEffectHandler.GetCurrentEffects().Contains(Declarations.EffectType.HomingAmmo)
@@ -72,14 +80,14 @@ namespace Game
         
         private void OnFireInput(object sender, EventArgs e)
         {
-            if (GameManager.instance.GamePaused || !mActive) return;
+            if (GameManager.Instance.GamePaused || !mActive) return;
 
             if (HasCooledDown()) Shoot();
         }
 
         private void ProcessDesktopDirectionalInput(object sender, ValueArgs<Vector2> args)
         {
-            if (GameManager.instance.GamePaused || !mActive) return;
+            if (GameManager.Instance.GamePaused || !mActive) return;
 
             var input = new Vector2(args.Value.x, Mathf.Clamp(args.Value.y, 0, 1));
             var speed = mShipData.Acceleration;
@@ -96,7 +104,7 @@ namespace Game
 
         private void ProcessMobileDirectionalInput(object sender, ValueArgs<Vector2> args)
         {
-            if (GameManager.instance.GamePaused || !mActive) return;
+            if (GameManager.Instance.GamePaused || !mActive) return;
 
             var thisTransform = transform;
             var input = new Vector2(args.Value.x, Mathf.Clamp(args.Value.y, 0, 1));
@@ -111,7 +119,8 @@ namespace Game
             mVelocity += Time.deltaTime * speed * thisTransform.right;
 
             thisTransform.rotation =
-                Quaternion.Lerp(thisTransform.rotation, Quaternion.Euler(new Vector3(0, 0, targetAngle)), mShipData.AngularVelocity * Time.deltaTime)
+                Quaternion.Lerp(thisTransform.rotation, Quaternion.Euler(new Vector3(0, 0, targetAngle)),
+                    mShipData.AngularVelocity * Time.deltaTime);
         }
         
         #endregion
@@ -125,13 +134,13 @@ namespace Game
 
         private void EffectsUpdated(object sender, ValueArgs<Declarations.EffectType[]> e)
         {
-            mShieldSprite.enabled = e.Value.Contains(Declarations.EffectType.Shield);
+            shieldSpriteRenderer.enabled = e.Value.Contains(Declarations.EffectType.Shield);
 
             var targetColor = e.Value.Contains(Declarations.EffectType.Speed)
-                ? GameManager.instance.Config.boostedEngineColor
-                : GameManager.instance.Config.engineColor;
+                ? GameManager.Instance.Config.boostedEngineColor
+                : GameManager.Instance.Config.engineColor;
 
-            var engineColor = mEngineParticle.colorOverLifetime;
+            var engineColor = engineParticle.colorOverLifetime;
             engineColor.color = targetColor;
         }
         
@@ -139,7 +148,7 @@ namespace Game
         
         private void DisableTrail(bool enableAfterwards = true)
         {
-            mEngineParticle.Pause();
+            engineParticle.Pause();
 
             if (enableAfterwards) StartCoroutine(EnableTrail());
         }
@@ -147,17 +156,17 @@ namespace Game
         private IEnumerator EnableTrail()
         {
             yield return new WaitForEndOfFrame();
-            mEngineParticle.Play();
+            engineParticle.Play();
         }
         
         private EffectHandler mEffectHandler;
 
         private WrapAroundObject mWrapAround;
 
-        [SerializeField] private ParticleSystem mEngineParticle;
+        [SerializeField] private ParticleSystem engineParticle;
         
-        [SerializeField] private Transform mGunpoint;
+        [SerializeField] private Transform gunpoint;
 
-        [SerializeField] private SpriteRenderer mShieldSprite;
+        [SerializeField] private SpriteRenderer shieldSpriteRenderer;
     }
 }

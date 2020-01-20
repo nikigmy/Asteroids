@@ -2,48 +2,88 @@
 using TMPro;
 using UnityEngine;
 using Utils;
+using Debug = System.Diagnostics.Debug;
 
 namespace UI
 {
     public class GameEndScreen : MonoBehaviour
     {
-        private const string gameOverText = "GAME OVER";
-        private const string youWinText = "YOU WIN";
+        private const string cGameOverText = "GAME OVER";
+        private const string cYouWinText = "YOU WIN";
+
         private static readonly int Show = Animator.StringToHash("Show");
 
-        [SerializeField] private CanvasGroup gameEndCanvasGroup;
-        [SerializeField] private TextMeshProUGUI gameEndText;
-        [SerializeField] private GameObject newHighScoreObject;
-        [SerializeField] private TextMeshProUGUI scoreText;
-        [SerializeField] private Animator youDiedAnimator;
+        private void Awake()
+        {
+            Debug.Assert(gameEndCanvasGroup != null);
+            Debug.Assert(gameEndText != null);
+            Debug.Assert(newHighScoreObject != null);
+            Debug.Assert(scoreText != null);
+            Debug.Assert(youDiedAnimator != null);
+        }
 
-        public void ShowGameEndScreen(int score, bool gameOver, bool newHighScore)
+        /// <summary>
+        /// Show the game end screen
+        /// </summary>
+        /// <param name="score">Score result</param>
+        /// <param name="win">Whether the player won</param>
+        /// <param name="newHighScore">Whether the player achieved new highscore</param>
+        public void ShowGameEndScreen(int score, bool win, bool newHighScore)
         {
             gameObject.SetActive(true);
             scoreText.text = "Score: " + score;
             newHighScoreObject.SetActive(newHighScore);
 
-            if (gameOver)
+            var audioManager = GameManager.Instance.AudioManager;
+            if (win)
             {
-                GameManager.instance.AudioManager.Play(Constants.AudioKeys.gameOver, AudioManager.AudioGroup.Sfx, false,
+                
+                audioManager.Play(Constants.AudioKeys.cGameComplete, AudioGroup.Sfx, false,
                     Vector3.zero);
-                SetGameEndCanvasState(false);
-                gameEndText.text = gameOverText;
-
-                youDiedAnimator.SetTrigger(Show);
+                gameEndText.text = cYouWinText;
+                SetGameEndCanvasState(true);
             }
             else
             {
-                GameManager.instance.AudioManager.Play(Constants.AudioKeys.gameComplete, AudioManager.AudioGroup.Sfx, false,
+                audioManager.Play(Constants.AudioKeys.cGameOver, AudioGroup.Sfx, false,
                     Vector3.zero);
-                gameEndText.text = youWinText;
-                SetGameEndCanvasState(true);
+                SetGameEndCanvasState(false);
+                gameEndText.text = cGameOverText;
+
+                youDiedAnimator.SetTrigger(Show);
             }
         }
 
+        /// <summary>
+        /// Hide the screen
+        /// </summary>
+        public void Hide()
+        {
+            gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Animation event handler for the you died animation
+        /// </summary>
         public void OnYouDiedAnimationEnded()
         {
             SetGameEndCanvasState(true);
+        }
+        
+        /// <summary>
+        /// Event handler for the play button
+        /// </summary>
+        public void OnPlayClicked()
+        {
+            GameManager.Instance.StartGame();
+        }
+
+        /// <summary>
+        /// Event handler for the main menu button
+        /// </summary>
+        public void OnMenuClicked()
+        {
+            GameManager.Instance.LoadMainMenu();
         }
 
         private void SetGameEndCanvasState(bool enable)
@@ -52,19 +92,16 @@ namespace UI
             gameEndCanvasGroup.alpha = enable ? 1 : 0;
         }
 
-        public void OnPlayClicked()
-        {
-            GameManager.instance.StartGame();
-        }
 
-        public void OnMenuClicked()
-        {
-            GameManager.instance.LoadMainMenu();
-        }
+        [SerializeField] private CanvasGroup gameEndCanvasGroup;
+        
+        [SerializeField] private TextMeshProUGUI gameEndText;
+        
+        [SerializeField] private GameObject newHighScoreObject;
+        
+        [SerializeField] private TextMeshProUGUI scoreText;
+        
+        [SerializeField] private Animator youDiedAnimator;
 
-        public void Hide()
-        {
-            gameObject.SetActive(false);
-        }
     }
 }

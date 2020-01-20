@@ -6,27 +6,32 @@ namespace Input
     /// <summary>
     /// Handles desktop input
     /// </summary>
+    [RequireComponent(typeof(KeyboardDirectionalInput), typeof(KeyboardButtonInput))]
     public class DesktopInputController : MonoBehaviour, IInputController
     {
+        private void Awake()
+        {
+            mDirectionalInput = GetComponent<KeyboardDirectionalInput>();
+            mFireInput = GetComponent<KeyboardButtonInput>();
+        }
+
         public void Init()
         {
-            fireInput.Init(KeyCode.Space);
-
-            Debug.Assert(directionalInput != null);
-            Debug.Assert(fireInput != null);
+            mFireInput.Init(KeyCode.Space);
         }
 
         public IDirectionalInput GetDirectionalInput()
         {
-            return directionalInput;
+            return mDirectionalInput;
         }
 
         public IButtonInput GetFireInput()
         {
-            return fireInput;
+            return mFireInput;
         }
         
-        [SerializeField] private KeyboardDirectionalInput directionalInput;
-        [SerializeField] private KeyboardButtonInput fireInput;
+        private KeyboardDirectionalInput mDirectionalInput;
+        
+        private KeyboardButtonInput mFireInput;
     }
 }

@@ -11,8 +11,9 @@ namespace Managers
     /// <summary>
     /// Main manager of the game
     /// </summary>
-    public class GameManager : MonoBehaviour
+    public sealed class GameManager : MonoBehaviour
     {
+        private static GameManager _instance;
         public static GameManager Instance
         {
             get { return _instance; }
@@ -28,7 +29,7 @@ namespace Managers
         {
             get
             {
-                return mUIManager; 
+                return uiManager; 
             }
         }
 
@@ -36,7 +37,7 @@ namespace Managers
         {
             get
             {
-                return mInputManager; 
+                return inputManager; 
             }
         }
 
@@ -44,7 +45,7 @@ namespace Managers
         {
             get
             {
-                return mPoolManager; 
+                return poolManager; 
             }
         }
 
@@ -52,7 +53,7 @@ namespace Managers
         {
             get
             {
-                return mAudioManager; 
+                return audioManager; 
             }
         }
 
@@ -60,15 +61,22 @@ namespace Managers
         {
             get
             {
-                return mLevelManager; 
+                return levelManager; 
             }
         }
 
         private void Awake()
         {
+            Debug.Assert(_instance == null);
             if (_instance == null)
             {
                 _instance = this;
+                
+                Debug.Assert(uiManager != null);
+                Debug.Assert(inputManager != null);
+                Debug.Assert(poolManager != null);
+                Debug.Assert(audioManager != null);
+                Debug.Assert(levelManager != null);
             }
             else
             {
@@ -80,11 +88,11 @@ namespace Managers
         private void Start()
         {
             mFsm = new FSM<GameFSMDescriptor>();
-            mFsm.AddStateBinding(GameFSMDescriptor.State.Initialising, StartInitialisation, null, null);
-            mFsm.AddStateBinding(GameFSMDescriptor.State.MainMenu, OpenMainMenu, null, CloseMainMenu);
-            mFsm.AddStateBinding(GameFSMDescriptor.State.Game, StartGameState, null, EndGame);
-            mFsm.AddStateBinding(GameFSMDescriptor.State.GameOver, StartGameOver, null, HideEndGameScreen);
-            mFsm.AddStateBinding(GameFSMDescriptor.State.GameCompleted, StartGameComplete, null, HideEndGameScreen);
+            mFsm.AddStateBinding(GameFSMDescriptor.State.Initialising, StartInitialisation,  null);
+            mFsm.AddStateBinding(GameFSMDescriptor.State.MainMenu, OpenMainMenu,  CloseMainMenu);
+            mFsm.AddStateBinding(GameFSMDescriptor.State.Game, StartGameState,  EndGame);
+            mFsm.AddStateBinding(GameFSMDescriptor.State.GameOver, StartGameOver,  HideEndGameScreen);
+            mFsm.AddStateBinding(GameFSMDescriptor.State.GameCompleted, StartGameComplete,  HideEndGameScreen);
 
             mFsm.Start(GameFSMDescriptor.State.Initialising);
         }
@@ -118,35 +126,35 @@ namespace Managers
         #region FSM Handlers
         private void StartInitialisation()
         {
-            levels = Resources.LoadAll(Constants.ResourcePaths.levelsFolder, typeof(LevelData)).Select(x => x as LevelData)
+            levels = Resources.LoadAll(Constants.ResourcePaths.cLevelsFolder, typeof(LevelData)).Select(x => x as LevelData)
                 .ToArray();
 
             CreatePoolManager();
-            mAudioManager.Init(mPoolManager);
-            mUIManager.Init();
+            audioManager.Init(poolManager);
+            uiManager.Init();
 
-            mInputManager.Init(Config.ControlScheme);
+            inputManager.Init(Config.ControlScheme);
 
-            mLevelManager.Init(mPoolManager);
-            mLevelManager.OnGameOver += OnGameOver;
-            mLevelManager.OnLevelComplete += OnLevelCompleted;
+            levelManager.Init(poolManager, audioManager, Config);
+            levelManager.OnGameOver += OnGameOver;
+            levelManager.OnLevelComplete += OnLevelCompleted;
 
             mFsm.ExecuteAction(GameFSMDescriptor.Action.ViewMainMenu);
         }
         
         private void OpenMainMenu()
         {
-            mInputManager.DisableVisuals();
+            inputManager.DisableVisuals();
 
-            mUIManager.ShowMainMenu();
+            uiManager.ShowMainMenu();
 
             mCurrentLevelIndex = 0;
-            mLevelManager.LoadLevel(levels[mCurrentLevelIndex]);
+            levelManager.LoadLevel(levels[mCurrentLevelIndex]);
         }
 
         private void CloseMainMenu()
         {
-            mUIManager.HideMainMenu();
+            uiManager.HideMainMenu();
         }
 
         private void StartGameState()
@@ -154,36 +162,36 @@ namespace Managers
             if (!mFsm.WasInState(GameFSMDescriptor.State.MainMenu))
             {
                 mCurrentLevelIndex = 0;
-                mLevelManager.LoadLevel(levels[mCurrentLevelIndex]);
+                levelManager.LoadLevel(levels[mCurrentLevelIndex]);
             }
 
-            mUIManager.ShowGameUI(mLevelManager);
-            mInputManager.EnableVisuals();
+            levelManager.StartLevel(Config.playerData, Config.flyingSaucerData);
 
-            mLevelManager.StartLevel(Config.playerData, Config.flyingSaucerData);
+            uiManager.ShowGameUI(levelManager);
+            inputManager.EnableVisuals();
         }
 
         private void EndGame()
         {
-            mLevelManager.Clear();
-            mUIManager.HideGameUI();
+            levelManager.Clear();
+            uiManager.HideGameUI();
         }
 
         private void StartGameOver()
         {
-            var newHighScore = UpdateHighScore(mLevelManager.Score);
-            mUIManager.ShowGameEndScreen(mLevelManager.Score, true, newHighScore);
+            var newHighScore = UpdateHighScore(levelManager.Score);
+            uiManager.ShowGameEndScreen(levelManager.Score, false, newHighScore);
         }
         
         private void StartGameComplete()
         {
-            var newHighScore = UpdateHighScore(mLevelManager.Score);
-            mUIManager.ShowGameEndScreen(mLevelManager.Score, false, newHighScore);
+            var newHighScore = UpdateHighScore(levelManager.Score);
+            uiManager.ShowGameEndScreen(levelManager.Score, true, newHighScore);
         }
         
         private void HideEndGameScreen()
         {
-            mUIManager.HideGameEndScreen();
+            uiManager.HideGameEndScreen();
         }
 
         #endregion
@@ -195,9 +203,9 @@ namespace Managers
             if (mCurrentLevelIndex + 1 < levels.Length)
             {
                 mCurrentLevelIndex += 1;
-                mLevelManager.Clear();
-                mLevelManager.LoadLevel(levels[mCurrentLevelIndex], args.Value.health, args.Value.score);
-                mLevelManager.StartLevel(Config.playerData, Config.flyingSaucerData);
+                levelManager.Clear();
+                levelManager.LoadLevel(levels[mCurrentLevelIndex], args.Value.health, args.Value.score);
+                levelManager.StartLevel(Config.playerData, Config.flyingSaucerData);
             }
             else
             {
@@ -216,41 +224,42 @@ namespace Managers
 
         private bool UpdateHighScore(int newScore)
         {
-            var highScore = PlayerPrefs.GetInt(Constants.SaveKeys.highScore, 0);
+            var highScore = PlayerPrefs.GetInt(Constants.SaveKeys.cHighScore, 0);
 
             var newHighScore = newScore > highScore;
-            if (newHighScore) PlayerPrefs.SetInt(Constants.SaveKeys.highScore, newScore);
+            if (newHighScore) PlayerPrefs.SetInt(Constants.SaveKeys.cHighScore, newScore);
 
             return newHighScore;
         }
         
         private void CreatePoolManager()
         {
-            mPoolManager.RegisterGenerator(
-                new GenericObjectGenerator<PlayerController>(Constants.ResourcePaths.shipPrefabPath));
-            mPoolManager.RegisterGenerator(
-                new GenericObjectGenerator<FlyingSaucer>(Constants.ResourcePaths.flyingSaucerPrefabPath));
+            poolManager.RegisterGenerator(
+                new GenericObjectGenerator<PlayerController>(Constants.ResourcePaths.cShipPrefabPath));
+            poolManager.PopulatePool<PlayerController>(1);
+            poolManager.RegisterGenerator(
+                new GenericObjectGenerator<FlyingSaucer>(Constants.ResourcePaths.cFlyingSaucerPrefabPath));
 
-            mPoolManager.RegisterGenerator(Constants.PoolKeys.heart,
-                new ObjectGenerator(Constants.ResourcePaths.uiHearthPrefabPath));
-            mPoolManager.PopulatePool<GameObject>(Constants.PoolKeys.heart, _instance.Config.playerStartHealth);
+            poolManager.RegisterGenerator(Constants.PoolKeys.cHeart,
+                new ObjectGenerator(Constants.ResourcePaths.cUiHearthPrefabPath));
+            poolManager.PopulatePool<GameObject>(Constants.PoolKeys.cHeart, _instance.Config.playerStartHealth);
 
-            mPoolManager.RegisterGenerator(Constants.PoolKeys.shieldPickup,
-                new GenericObjectGenerator<Pickup>(Constants.ResourcePaths.shieldPickup));
-            mPoolManager.RegisterGenerator(Constants.PoolKeys.homingAmmoPickup,
-                new GenericObjectGenerator<Pickup>(Constants.ResourcePaths.homingAmmoPickup));
-            mPoolManager.RegisterGenerator(Constants.PoolKeys.speedBoostPickup,
-                new GenericObjectGenerator<Pickup>(Constants.ResourcePaths.speedBoostPickup));
+            poolManager.RegisterGenerator(Constants.PoolKeys.cShieldPickup,
+                new GenericObjectGenerator<Pickup>(Constants.ResourcePaths.cShieldPickup));
+            poolManager.RegisterGenerator(Constants.PoolKeys.cHomingAmmoPickup,
+                new GenericObjectGenerator<Pickup>(Constants.ResourcePaths.cHomingAmmoPickup));
+            poolManager.RegisterGenerator(Constants.PoolKeys.cSpeedBoostPickup,
+                new GenericObjectGenerator<Pickup>(Constants.ResourcePaths.cSpeedBoostPickup));
 
-            mPoolManager.RegisterGenerator(
-                new GenericObjectGenerator<BulletController>(Constants.ResourcePaths.bulletPrefabPath));
-            mPoolManager.PopulatePool<BulletController>(_instance.Config.bulletPool);
+            poolManager.RegisterGenerator(
+                new GenericObjectGenerator<BulletController>(Constants.ResourcePaths.cBulletPrefabPath));
+            poolManager.PopulatePool<BulletController>(_instance.Config.bulletPool);
 
-            mPoolManager.RegisterGenerator(new AsteroidGenerator(Constants.ResourcePaths.asteroidPrefabPath));
-            mPoolManager.PopulatePool<Asteroid>(_instance.Config.minAsteroidPool);
+            poolManager.RegisterGenerator(new AsteroidGenerator(Constants.ResourcePaths.cAsteroidPrefabPath));
+            poolManager.PopulatePool<Asteroid>(_instance.Config.minAsteroidPool);
 
-            mPoolManager.RegisterGenerator(new GenericObjectGenerator<AudioSource>());
-            mPoolManager.PopulatePool<AudioSource>(_instance.Config.audioSourcePool);
+            poolManager.RegisterGenerator(new GenericObjectGenerator<AudioSource>());
+            poolManager.PopulatePool<AudioSource>(_instance.Config.audioSourcePool);
         }
         
         #endregion
@@ -262,21 +271,18 @@ namespace Managers
         private LevelData[] levels;
 
         [SerializeField]
-        public UIManager mUIManager;
+        private UIManager uiManager;
 
         [SerializeField]
-        private InputManager mInputManager;
+        private InputManager inputManager;
 
         [SerializeField]
-        private PoolManager mPoolManager;
+        private PoolManager poolManager;
 
         [SerializeField]
-        private AudioManager mAudioManager;
+        private AudioManager audioManager;
 
         [SerializeField]
-        private LevelManager mLevelManager;
-
-        private static GameManager _instance;
-        
+        private LevelManager levelManager;
     }
 }

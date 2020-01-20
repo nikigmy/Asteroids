@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78903aa6d8a75784c941491c5f9bdea2, type: 3}
   m_Name: Config
   m_EditorClassIdentifier: 
+  levelBoundaryThickness: 10
+  cameraZOffset: -10
+  playerStartHealth: 3
   playerData: {fileID: 11400000, guid: af5f7377ea021564a9b6ba28760f85f5, type: 2}
-  startHealth: 5
   engineColor:
     m_Mode: 1
     m_GradientMin:
@@ -138,43 +140,43 @@ MonoBehaviour:
       m_NumAlphaKeys: 2
     m_ColorMin: {r: 0, g: 0, b: 0, a: 0}
     m_ColorMax: {r: 0, g: 0, b: 0, a: 0}
+  playerStartEffect:
+    duration: 55
+    effectType: 1
   flyingSaucerData: {fileID: 11400000, guid: a406325af5b6e8d4688ece2f7a7641ef, type: 2}
   saucerShotRandomisation: 15
-  levelBoundaryThickness: 10
-  audioSourcePool: 10
-  minAsteroidPool: 15
-  bulletPool: 20
-  optimalAsteroidPoolPercentage: 70
-  asteroidSpeeds:
+  asteroidStartLevel: 3
+  asteroidLevels:
   - asteroidLevel: 3
     minSpeed: 1
     maxSpeed: 2
+    scale: 1
   - asteroidLevel: 2
     minSpeed: 3
     maxSpeed: 4
+    scale: 0.66
   - asteroidLevel: 1
     minSpeed: 5
     maxSpeed: 6
-  asteroidStartLevel: 3
-  scaleLevels:
-  - 0.3
-  - 0.6
-  - 1
-  minAsteroidRadius: 1.3
-  maxAsteroidRadius: 2.3
+    scale: 0.33
   minAsteroidPoints: 10
   maxAsteroidPoints: 15
-  ControlScheme: 0
+  minAsteroidRadius: 1.3
+  maxAsteroidRadius: 2.3
   pickupDurations:
-  - pickUp: 0
-    duration: 45
-  - pickUp: 1
-    duration: 15
-  - pickUp: 2
-    duration: 30
+  - duration: 45
+    effectType: 0
+  - duration: 15
+    effectType: 1
+  - duration: 30
+    effectType: 2
   projectileLife: 1.2
-  projectileSpeed: 25
+  projectileSpeed: 30
   homingRotationSpeed: 17
   playerProjectileColor: {r: 0, g: 0.36995363, b: 1, a: 1}
   enemyProjectileColor: {r: 1, g: 0, b: 0, a: 1}
-  AudioMixer: {fileID: 24100000, guid: 8c0fcdda55a24b34fb16b81655f565d3, type: 2}
+  minAsteroidPool: 15
+  audioSourcePool: 10
+  bulletPool: 20
+  optimalAsteroidPoolPercentage: 70
+  ControlScheme: 0

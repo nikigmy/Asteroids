@@ -228,6 +228,7 @@ namespace Utils
         private StateBinding mCurrentState;
 
         private FSMDescriptor mFsmDescriptor;
+        
         private int mPreviousStateID = cInvalidStateIndex;
     }
 }

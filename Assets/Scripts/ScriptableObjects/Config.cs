@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
-using UnityEngine.Audio;
 using Utils;
 
 namespace ScriptableObjects
 {
+    /// <summary>
+    /// Holds a configuration of the game
+    /// </summary>
     [CreateAssetMenu(fileName = "Config", menuName = "ScriptableObjects/Config", order = 1)]
     public class Config : ScriptableObject
     {
@@ -13,7 +15,7 @@ namespace ScriptableObjects
         public float cameraZOffset = -10;
         
         [Header("Player", order = 2)] 
-        public int playerStartHealth;
+        public int playerStartHealth = 3;
         
         public ShipData playerData;
 
@@ -29,17 +31,10 @@ namespace ScriptableObjects
         public float saucerShotRandomisation = 15;
 
         [Header("Asteroids", order = 4)] 
-        public Declarations.AsteroidSpeed[] asteroidSpeeds;
-
         public int asteroidStartLevel = 3;
-        
-        public float[] asteroidScaleLevels = new float[3]
-        {
-            0.3f,
-            0.6f,
-            1
-        };
-        
+
+        public Declarations.AsteroidLevel[] asteroidLevels;
+
         [Header("Asteroid Shape Generation", order = 5)]
         public int minAsteroidPoints = 10;
         

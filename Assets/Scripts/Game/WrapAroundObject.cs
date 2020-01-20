@@ -14,25 +14,27 @@ namespace Game
 
         private void OnTriggerStay2D(Collider2D other)
         {
-            if (other.CompareTag(Constants.Tags.boundary)) CheckForTeleport();
+            if (other.CompareTag(Constants.Tags.cBoundary)) CheckForTeleport();
         }
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (other.CompareTag(Constants.Tags.boundary)) CheckForTeleport();
+            if (other.CompareTag(Constants.Tags.cBoundary)) CheckForTeleport();
         }
 
         private void CheckForTeleport()
         {
+            var fieldSize = GameManager.Instance.LevelManager.FieldSize;
+            var fieldPos = GameManager.Instance.LevelManager.FieldPosition;
             var pos = transform.position;
 
-            if (Math.Abs(GameManager.instance.LevelManager.FieldPosition.x - pos.x) >
-                GameManager.instance.LevelManager.FieldSize.x / 2)
-                pos.x -= GameManager.instance.LevelManager.FieldSize.x * (pos.x / Math.Abs(pos.x));
+            if (Math.Abs(fieldPos.x - pos.x) >
+                fieldSize.x / 2)
+                pos.x -= fieldSize.x * (pos.x / Math.Abs(pos.x));
 
-            if (Math.Abs(GameManager.instance.LevelManager.FieldPosition.y - pos.y) >
-                GameManager.instance.LevelManager.FieldSize.y / 2)
-                pos.y -= GameManager.instance.LevelManager.FieldSize.y * (pos.y / Math.Abs(pos.y));
+            if (Math.Abs(fieldPos.y - pos.y) >
+                fieldSize.y / 2)
+                pos.y -= fieldSize.y * (pos.y / Math.Abs(pos.y));
 
             if (pos != transform.position)
             {

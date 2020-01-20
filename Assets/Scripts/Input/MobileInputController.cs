@@ -9,23 +9,28 @@ namespace Input
     /// </summary>
     public class MobileInputController : MonoBehaviour, IInputController
     {
+        private void Awake()
+        {
+            Debug.Assert(joypad != null);
+            Debug.Assert(fireButton != null);
+        }
+
         public void Init()
         {
-            Debug.Assert(mJoypad != null);
-            Debug.Assert(mButton != null);
+            
         }
 
         public IDirectionalInput GetDirectionalInput()
         {
-            return mJoypad;
+            return joypad;
         }
 
         public IButtonInput GetFireInput()
         {
-            return mButton;
+            return fireButton;
         }
         
-        [SerializeField] private Button mButton;
-        [SerializeField] private Joypad mJoypad;
+        [SerializeField] private Button fireButton;
+        [SerializeField] private Joypad joypad;
     }
 }

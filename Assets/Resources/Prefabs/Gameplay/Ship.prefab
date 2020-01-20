@@ -5000,7 +5000,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac795d253d036df4ea7edd2af024053b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentEffects: []
 --- !u!114 &2251135960366821407
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5013,11 +5012,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7779d610c48a384792d1ef9508f2f19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fireSounds:
-  - {fileID: 8300000, guid: d7af7331c6a928c4baaef0fb489ec23a, type: 3}
-  - {fileID: 8300000, guid: ae7ddf81b68915742a79d233359a0c4a, type: 3}
-  shieldSprite: {fileID: 5416678556365452901}
+  engineParticle: {fileID: 198209673895268800}
   gunpoint: {fileID: 4227884353332570}
+  shieldSpriteRenderer: {fileID: 5416678556365452901}
 --- !u!1 &1013703716276611736
 GameObject:
   m_ObjectHideFlags: 0
@@ -5029,7 +5026,7 @@ GameObject:
   - component: {fileID: 3460911622976894893}
   - component: {fileID: 5416678556365452901}
   m_Layer: 8
-  m_Name: ShieldSprite
+  m_Name: Shield
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

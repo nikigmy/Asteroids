@@ -27,7 +27,11 @@ namespace Managers
         public void RegisterGenerator<T>(string key, IObjectGenerator<T> generator)
         {
             if (!mObjectGenerators.ContainsKey(key))
+            {
                 mObjectGenerators.Add(key, generator);
+                mPoolObjectsDictionary.Add(key, new List<object>());
+                mActiveObjectsDictionary.Add(key, new List<object>());
+            }
             else
                 Debug.LogError(string.Format("Generator for key {0} already registered", key));
         }
@@ -41,7 +45,11 @@ namespace Managers
         {
             var type = typeof(T).FullName;
             if (!mObjectGenerators.ContainsKey(type))
+            {
                 mObjectGenerators.Add(type, generator);
+                mPoolObjectsDictionary.Add(type, new List<object>());
+                mActiveObjectsDictionary.Add(type, new List<object>());
+            }
             else
                 Debug.LogError(string.Format("Generator for key {0} already registered", type));
         }

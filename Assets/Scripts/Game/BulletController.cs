@@ -1,4 +1,5 @@
 ﻿using Managers;
+using ScriptableObjects;
 using UnityEngine;
 
 namespace Game
@@ -13,6 +14,8 @@ namespace Game
         private void Awake()
         {
             mActive = false;
+            
+            Debug.Assert(graphics != null);
         }
         
         private void Update()
@@ -26,14 +29,14 @@ namespace Game
                     if (mTarget != null)
                     {
                         var pos = transform.position;
-                        var closest = Utils.Utils.GetClosestPosition(pos, mTarget.transform.position);
+                        var closest = Utils.Utils.GetClosestPosition(pos, mTarget.transform.position, mLevelManager.FieldSize);
 
                         var dir = closest - pos;
                         var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
                         var rot = Quaternion.Euler(new Vector3(0, 0, angle));
 
                         var lerpedRottion = Quaternion.Lerp(transform.rotation, rot,
-                            Time.deltaTime * GameManager.instance.Config.homingRotationSpeed).eulerAngles;
+                            Time.deltaTime * mConfiguration.homingRotationSpeed).eulerAngles;
                         transform.rotation = Quaternion.Euler(0, 0, lerpedRottion.z);
                     }
                     else
@@ -42,7 +45,7 @@ namespace Game
                     }
                 }
 
-                transform.position += Time.deltaTime * GameManager.instance.Config.projectileSpeed * transform.right;
+                transform.position += Time.deltaTime * mConfiguration.projectileSpeed * transform.right;
             }
         }
 
@@ -62,14 +65,18 @@ namespace Game
         public override void Init(ProjectileMode mode, ProjectileType type)
         {
             base.Init(mode, type);
+            
+            mConfiguration = GameManager.Instance.Config;
+            mLevelManager = GameManager.Instance.LevelManager;
+                
             mActive = true;
 
-            Invoke("DestroyProjectile", GameManager.instance.Config.projectileLife);
+            Invoke("DestroyProjectile", mConfiguration.projectileLife);
             mTarget = GetClosestTarget();
 
-            mGraphics.color = mode == ProjectileMode.Enemy
-                ? GameManager.instance.Config.enemyProjectileColor
-                : GameManager.instance.Config.playerProjectileColor;
+            graphics.color = mode == ProjectileMode.Enemy
+                ? mConfiguration.enemyProjectileColor
+                : mConfiguration.playerProjectileColor;
         }
 
         private void DestroyProjectile()
@@ -79,15 +86,17 @@ namespace Game
 
         private GameObject GetClosestTarget()
         {
+            var pool = GameManager.Instance.PoolManager;
+            
             var pos = transform.position;
             GameObject result = null;
             float minDistance = float.MaxValue;
-            var asteroids = GameManager.instance.PoolManager.GetActiveObjects<Asteroid>();
+            var asteroids = pool.GetActiveObjects<Asteroid>();
             if (asteroids.Count > 0)
             {
                 for (var i = 0; i < asteroids.Count; i++)
                 {
-                    var closestPoint = Utils.Utils.GetClosestPosition(pos, asteroids[i].transform.position);
+                    var closestPoint = Utils.Utils.GetClosestPosition(pos, asteroids[i].transform.position, mLevelManager.FieldSize);
                     var dist = Vector3.Distance(closestPoint, pos);
                     if (dist < minDistance)
                     {
@@ -97,12 +106,12 @@ namespace Game
                 }
             }
 
-            var enemies = GameManager.instance.PoolManager.GetActiveObjects<FlyingSaucer>();
+            var enemies = pool.GetActiveObjects<FlyingSaucer>();
             if (enemies.Count > 0)
             {
                 for (var i = 0; i < enemies.Count; i++)
                 {
-                    var closestPoint = Utils.Utils.GetClosestPosition(pos, enemies[i].transform.position);
+                    var closestPoint = Utils.Utils.GetClosestPosition(pos, enemies[i].transform.position, mLevelManager.FieldSize);
                     var dist = Vector3.Distance(closestPoint, pos);
                     if (dist < minDistance)
                     {
@@ -116,8 +125,13 @@ namespace Game
         }
 
         private bool mActive;
+        
         private GameObject mTarget;
 
-        [SerializeField] private SpriteRenderer mGraphics;
+        private Config mConfiguration;
+
+        private LevelManager mLevelManager;
+
+        [SerializeField] private SpriteRenderer graphics;
     }
 }

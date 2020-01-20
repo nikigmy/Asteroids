@@ -4,7 +4,6 @@ using System.Linq;
 using Managers;
 using ScriptableObjects;
 using UnityEngine;
-using UnityEngine.Events;
 using Utils;
 using Random = UnityEngine.Random;
 
@@ -16,6 +15,7 @@ namespace Game
     [RequireComponent(typeof(CollisionManager))]
     public class LevelManager : MonoBehaviour
     {
+        private const float cPlayerSpawnRadius = 2f;
         public event EventHandler<ValueArgs<int>> OnScoreChanged;
         public event EventHandler<ValueArgs<int>> OnHealthChanged;
         public event EventHandler<ValueArgs<(int health, int score)>> OnLevelComplete;
@@ -33,9 +33,14 @@ namespace Game
 
         public ShipController Player { get; private set; }
 
-        private void Start()
+        private void Awake()
         {
             CollisionManager = GetComponent<CollisionManager>();
+            
+            Debug.Assert(wrapAroundCameras != null);
+            Debug.Assert(boundaryColliders != null);
+            Debug.Assert(wrapAroundCameras.Length == 8);
+            Debug.Assert(boundaryColliders.Length == 4);
         }
 
         #region Public
@@ -44,11 +49,14 @@ namespace Game
         /// Initialises the level manager
         /// </summary>
         /// <param name="poolManager">Pool manager</param>
-        public void Init(PoolManager poolManager)
+        /// <param name="audioManager">Audio manager</param>
+        /// <param name="configuration">Configuration</param>
+        public void Init(PoolManager poolManager, AudioManager audioManager, Config configuration)
         {
             mPoolManager = poolManager;
-
+            mAudioManager = audioManager;
             FieldPosition = Vector2.zero;
+            mConfiguration = configuration;
 
             var aspectRatio = (float) Screen.width / Screen.height;
             var fieldHeight = Camera.main.orthographicSize * 2;
@@ -57,16 +65,16 @@ namespace Game
             PositionBoundaries();
             PositionCameras();
 
-            CollisionManager.SubscribeOnEnter(Constants.Tags.asteroid, Constants.Tags.projectile, AsteroidDestroyed);
-            CollisionManager.SubscribeOnEnter(Constants.Tags.asteroid, Constants.Tags.player, AsteroidPlayerHit);
-            CollisionManager.SubscribeOnEnter(Constants.Tags.projectile, Constants.Tags.player, BulletPlayerHit);
-            CollisionManager.SubscribeOnEnter(Constants.Tags.projectile, Constants.Tags.enemy, BulletEnemyHit);
-            CollisionManager.SubscribeOnEnter(Constants.Tags.enemy, Constants.Tags.player, EnemyPlayerHit);
-            CollisionManager.SubscribeOnEnter(Constants.Tags.player, Constants.Tags.pickup, PlayerPickupHit);
+            CollisionManager.SubscribeOnEnter(Constants.Tags.cAsteroid, Constants.Tags.cProjectile, AsteroidDestroyed);
+            CollisionManager.SubscribeOnEnter(Constants.Tags.cAsteroid, Constants.Tags.cPlayer, AsteroidPlayerHit);
+            CollisionManager.SubscribeOnEnter(Constants.Tags.cProjectile, Constants.Tags.cPlayer, BulletPlayerHit);
+            CollisionManager.SubscribeOnEnter(Constants.Tags.cProjectile, Constants.Tags.cEnemy, BulletEnemyHit);
+            CollisionManager.SubscribeOnEnter(Constants.Tags.cEnemy, Constants.Tags.cPlayer, EnemyPlayerHit);
+            CollisionManager.SubscribeOnEnter(Constants.Tags.cPlayer, Constants.Tags.cPickup, PlayerPickupHit);
 
-            CollisionManager.SubscribeOnStay(Constants.Tags.enemy, Constants.Tags.player, EnemyPlayerHit);
-            CollisionManager.SubscribeOnStay(Constants.Tags.projectile, Constants.Tags.player, BulletPlayerHit);
-            CollisionManager.SubscribeOnStay(Constants.Tags.asteroid, Constants.Tags.player, AsteroidPlayerHit);
+            CollisionManager.SubscribeOnStay(Constants.Tags.cEnemy, Constants.Tags.cPlayer, EnemyPlayerHit);
+            CollisionManager.SubscribeOnStay(Constants.Tags.cProjectile, Constants.Tags.cPlayer, BulletPlayerHit);
+            CollisionManager.SubscribeOnStay(Constants.Tags.cAsteroid, Constants.Tags.cPlayer, AsteroidPlayerHit);
         }
 
         /// <summary>
@@ -78,7 +86,7 @@ namespace Game
             mCurrentLevel = level;
 
             Score = 0;
-            Health = GameManager.instance.Config.playerStartHealth;
+            Health = mConfiguration.playerStartHealth;
 
             CreateLevel(level);
         }
@@ -119,7 +127,7 @@ namespace Game
             if (mCurrentLevel.FlyingSaucerTimings != null && mCurrentLevel.FlyingSaucerTimings.Length > 0)
                 StartCoroutine("SpawnFlyingSaucerRoutine");
 
-            mGameMusicSource = GameManager.instance.AudioManager.Play(Constants.AudioKeys.gameMusic,
+            mGameMusicSource = mAudioManager.Play(Constants.AudioKeys.cGameMusic,
                 AudioGroup.Music, true,
                 Vector3.zero);
             this.Raise(OnLevelStarted, EventArgs.Empty);
@@ -131,7 +139,7 @@ namespace Game
         public void Clear()
         {
             StopCoroutine("SpawnFlyingSaucerRoutine");
-            mPoolManager.ReturnAllObjects(new[] {typeof(AudioSource).FullName});
+            mPoolManager.ReturnAllObjects(new[] {typeof(AudioSource).FullName, Constants.PoolKeys.cHeart});
             mPoolManager.ReturnObject(mGameMusicSource);
         }
 
@@ -143,7 +151,7 @@ namespace Game
         {
             Asteroid asteroid;
             BulletController bullet;
-            if (collision.Item1.gameObject.CompareTag(Constants.Tags.asteroid))
+            if (collision.Item1.gameObject.CompareTag(Constants.Tags.cAsteroid))
             {
                 asteroid = collision.Item1.GetComponent<Asteroid>();
                 bullet = collision.Item2.GetComponent<BulletController>();
@@ -167,7 +175,7 @@ namespace Game
         private void BulletPlayerHit(Tuple<Collider2D, Collider2D> collision)
         {
             BulletController bullet;
-            if (collision.Item1.gameObject.CompareTag(Constants.Tags.projectile))
+            if (collision.Item1.gameObject.CompareTag(Constants.Tags.cProjectile))
                 bullet = collision.Item1.GetComponent<BulletController>();
             else
                 bullet = collision.Item2.GetComponent<BulletController>();
@@ -183,7 +191,7 @@ namespace Game
         {
             FlyingSaucer enemy;
             BulletController bullet;
-            if (collision.Item1.gameObject.CompareTag(Constants.Tags.enemy))
+            if (collision.Item1.gameObject.CompareTag(Constants.Tags.cEnemy))
             {
                 enemy = collision.Item1.GetComponent<FlyingSaucer>();
                 bullet = collision.Item2.GetComponent<BulletController>();
@@ -201,7 +209,7 @@ namespace Game
                 mPoolManager.ReturnObject(enemy);
                 mPoolManager.ReturnObject(bullet);
 
-                GameManager.instance.AudioManager.Play(Constants.AudioKeys.explosion, AudioGroup.Sfx,
+                mAudioManager.Play(Constants.AudioKeys.cExplosion, AudioGroup.Sfx,
                     false,
                     enemy.transform.position);
             }
@@ -216,7 +224,7 @@ namespace Game
         {
             ShipController player;
             Pickup pickUp;
-            if (collision.Item1.gameObject.CompareTag(Constants.Tags.player))
+            if (collision.Item1.gameObject.CompareTag(Constants.Tags.cPlayer))
             {
                 player = collision.Item1.GetComponent<ShipController>();
                 pickUp = collision.Item2.GetComponent<Pickup>();
@@ -236,43 +244,43 @@ namespace Game
 
         private void OnPickup(ShipController player, Pickup pickup)
         {
-            GameManager.instance.AudioManager.Play(Constants.AudioKeys.pickup, AudioGroup.Sfx, false,
+            mAudioManager.Play(Constants.AudioKeys.cPickup, AudioGroup.Sfx, false,
                 pickup.transform.position);
 
-            var key = pickup.Effect == Declarations.EffectType.Shield ? Constants.PoolKeys.shieldPickup :
-                pickup.Effect == Declarations.EffectType.Speed ? Constants.PoolKeys.speedBoostPickup :
-                Constants.PoolKeys.homingAmmoPickup;
+            var key = pickup.Effect == Declarations.EffectType.Shield ? Constants.PoolKeys.cShieldPickup :
+                pickup.Effect == Declarations.EffectType.Speed ? Constants.PoolKeys.cSpeedBoostPickup :
+                Constants.PoolKeys.cHomingAmmoPickup;
             player.GetComponent<EffectHandler>().AddEffect(pickup.Effect,
-                GameManager.instance.Config.pickupDurations.FirstOrDefault(x => x.effectType == pickup.Effect)
+                mConfiguration.pickupDurations.FirstOrDefault(x => x.effectType == pickup.Effect)
                     .duration);
 
-            GameManager.instance.LevelManager.mPoolManager.ReturnObject(key, pickup);
+            mPoolManager.ReturnObject(key, pickup);
         }
 
         private void CreateLevel(LevelData level)
         {
             var targetAsteroidPool =
-                level.AsteroidCount * 4 * (GameManager.instance.Config.optimalAsteroidPoolPercentage / 100);
+                level.AsteroidCount * 4 * (mConfiguration.optimalAsteroidPoolPercentage / 100);
             var targetPickupPool = targetAsteroidPool / 20;
 
             mPoolManager.PopulatePoolToTarget<Asteroid>(targetAsteroidPool);
-            mPoolManager.PopulatePool<Pickup>(Constants.PoolKeys.shieldPickup, targetPickupPool);
-            mPoolManager.PopulatePool<Pickup>(Constants.PoolKeys.homingAmmoPickup, targetPickupPool);
-            mPoolManager.PopulatePool<Pickup>(Constants.PoolKeys.speedBoostPickup, targetPickupPool);
+            mPoolManager.PopulatePool<Pickup>(Constants.PoolKeys.cShieldPickup, targetPickupPool);
+            mPoolManager.PopulatePool<Pickup>(Constants.PoolKeys.cHomingAmmoPickup, targetPickupPool);
+            mPoolManager.PopulatePool<Pickup>(Constants.PoolKeys.cSpeedBoostPickup, targetPickupPool);
 
             if (level.FlyingSaucerTimings != null && level.FlyingSaucerTimings.Length > 0)
                 mPoolManager.PopulatePoolToTarget<FlyingSaucer>(level.FlyingSaucerTimings.Length);
 
             var asteroidsToPlace = mPoolManager.RetrieveObjects<Asteroid>(level.AsteroidCount);
 
-            var speeds = GameManager.instance.Config.asteroidSpeeds.First(x =>
-                x.asteroidLevel == GameManager.instance.Config.asteroidStartLevel);
+            var speeds = mConfiguration.asteroidLevels.First(x =>
+                x.asteroidLevel == mConfiguration.asteroidStartLevel);
             for (var i = 0; i < asteroidsToPlace.Length; i++)
             {
                 var asteroid = asteroidsToPlace[i];
 
-                var posX = Utils.Utils.GenerateRandomValue(1.5f, GameManager.instance.LevelManager.FieldSize.x / 2f);
-                var posY = Utils.Utils.GenerateRandomValue(1.5f, GameManager.instance.LevelManager.FieldSize.y / 2f);
+                var posX = Utils.Utils.GenerateRandomValue(cPlayerSpawnRadius, FieldSize.x / 2f);
+                var posY = Utils.Utils.GenerateRandomValue(cPlayerSpawnRadius, FieldSize.y / 2f);
                 asteroid.transform.position = new Vector3(posX, posY, 0);
 
                 var asteroidRotation = new Vector3(0,
@@ -280,7 +288,7 @@ namespace Game
                 asteroid.transform.rotation = Quaternion.Euler(asteroidRotation);
 
                 var speed = Random.Range(speeds.maxSpeed, speeds.maxSpeed);
-                asteroid.GetComponent<Asteroid>().Init(GameManager.instance.Config.asteroidStartLevel, speed);
+                asteroid.GetComponent<Asteroid>().Init(mConfiguration.asteroidStartLevel, speed);
 
                 asteroid.gameObject.SetActive(true);
             }
@@ -303,8 +311,8 @@ namespace Game
 
             enemy.Init(mFlyingSaucerData);
 
-            var posX = Utils.Utils.GenerateRandomValue(0, GameManager.instance.LevelManager.FieldSize.x / 2f);
-            var posY = Utils.Utils.GenerateRandomValue(0, GameManager.instance.LevelManager.FieldSize.y / 2f);
+            var posX = Utils.Utils.GenerateRandomValue(0, FieldSize.x / 2f);
+            var posY = Utils.Utils.GenerateRandomValue(0, FieldSize.y / 2f);
             enemy.transform.position = new Vector3(posX, posY, 0);
 
             var movementVectorX = Utils.Utils.GenerateRandomValue(0, 1);
@@ -317,7 +325,7 @@ namespace Game
 
         private void OnAsteroidDestroyed(Asteroid asteroid, Projectile projectile)
         {
-            GameManager.instance.AudioManager.Play(Constants.AudioKeys.explosion, AudioGroup.Sfx, false,
+            mAudioManager.Play(Constants.AudioKeys.cExplosion, AudioGroup.Sfx, false,
                 asteroid.transform.position);
 
             int[] asteroidRewards = {1000, 500, 100};
@@ -328,24 +336,24 @@ namespace Game
 
             if (asteroid.Level > 1) SplitAsteroid(asteroid.Level, asteroid.transform.position, hitDir);
 
-            if (Random.Range(0, 20) == 0)
+//            if (Random.Range(0, 20) == 0)
             {
-                var key = Constants.PoolKeys.shieldPickup;
+                var key = Constants.PoolKeys.cShieldPickup;
                 var pickupIndex = Random.Range(0, 3);
                 switch (pickupIndex)
                 {
                     case 0:
-                        key = Constants.PoolKeys.shieldPickup;
+                        key = Constants.PoolKeys.cShieldPickup;
                         break;
                     case 1:
-                        key = Constants.PoolKeys.homingAmmoPickup;
+                        key = Constants.PoolKeys.cHomingAmmoPickup;
                         break;
                     case 2:
-                        key = Constants.PoolKeys.speedBoostPickup;
+                        key = Constants.PoolKeys.cSpeedBoostPickup;
                         break;
                 }
 
-                var pickup = GameManager.instance.LevelManager.mPoolManager.RetrieveObject<Pickup>(key);
+                var pickup = mPoolManager.RetrieveObject<Pickup>(key);
                 pickup.transform.position = asteroid.transform.position;
             }
 
@@ -373,7 +381,7 @@ namespace Game
                 this.Raise(OnHealthChanged, new ValueArgs<int>(Health));
                 if (Health > 0)
                 {
-                    GameManager.instance.AudioManager.Play(Constants.AudioKeys.explosion, AudioGroup.Sfx,
+                    mAudioManager.Play(Constants.AudioKeys.cExplosion, AudioGroup.Sfx,
                         false, Player.transform.position);
                     Player.ResetShip();
                 }
@@ -391,7 +399,7 @@ namespace Game
             var nextLevel = level - 1;
             var asteroids = mPoolManager.RetrieveObjects<Asteroid>(2);
             var angle = Mathf.Atan2(hitDir.y, hitDir.x) * Mathf.Rad2Deg;
-            var speeds = GameManager.instance.Config.asteroidSpeeds.First(x => x.asteroidLevel == nextLevel);
+            var speeds = mConfiguration.asteroidLevels.First(x => x.asteroidLevel == nextLevel);
 
             foreach (var asteroidObject in asteroids)
             {
@@ -411,35 +419,34 @@ namespace Game
         {
             var fieldPos = Vector2.zero;
             var cameSize = Camera.main.orthographicSize;
-            var cameraOffset = GameManager.instance.Config.cameraZOffset;
             //left
-            mWrapAroundCameras[0].transform.position = new Vector3(fieldPos.x - FieldSize.x, fieldPos.y, cameraOffset);
+            wrapAroundCameras[0].transform.position = new Vector3(fieldPos.x - FieldSize.x, fieldPos.y, mConfiguration.cameraZOffset);
             //leftUp
-            mWrapAroundCameras[1].transform.position =
-                new Vector3(fieldPos.x - FieldSize.x, fieldPos.y + FieldSize.y, cameraOffset);
+            wrapAroundCameras[1].transform.position =
+                new Vector3(fieldPos.x - FieldSize.x, fieldPos.y + FieldSize.y, mConfiguration.cameraZOffset);
             //up
-            mWrapAroundCameras[2].transform.position = new Vector3(fieldPos.x, fieldPos.y + FieldSize.y, cameraOffset);
+            wrapAroundCameras[2].transform.position = new Vector3(fieldPos.x, fieldPos.y + FieldSize.y, mConfiguration.cameraZOffset);
             //rightUp
-            mWrapAroundCameras[3].transform.position =
-                new Vector3(fieldPos.x + FieldSize.x, fieldPos.y + FieldSize.y, cameraOffset);
+            wrapAroundCameras[3].transform.position =
+                new Vector3(fieldPos.x + FieldSize.x, fieldPos.y + FieldSize.y, mConfiguration.cameraZOffset);
             //right
-            mWrapAroundCameras[4].transform.position = new Vector3(fieldPos.x + FieldSize.x, fieldPos.y, cameraOffset);
+            wrapAroundCameras[4].transform.position = new Vector3(fieldPos.x + FieldSize.x, fieldPos.y, mConfiguration.cameraZOffset);
             //rightBot
-            mWrapAroundCameras[5].transform.position =
-                new Vector3(fieldPos.x + FieldSize.x, fieldPos.y - FieldSize.y, cameraOffset);
+            wrapAroundCameras[5].transform.position =
+                new Vector3(fieldPos.x + FieldSize.x, fieldPos.y - FieldSize.y, mConfiguration.cameraZOffset);
             //bot
-            mWrapAroundCameras[6].transform.position = new Vector3(fieldPos.x, fieldPos.y - FieldSize.y, cameraOffset);
+            wrapAroundCameras[6].transform.position = new Vector3(fieldPos.x, fieldPos.y - FieldSize.y, mConfiguration.cameraZOffset);
             //leftBot
-            mWrapAroundCameras[7].transform.position =
-                new Vector3(fieldPos.x - FieldSize.x, fieldPos.y - FieldSize.y, cameraOffset);
+            wrapAroundCameras[7].transform.position =
+                new Vector3(fieldPos.x - FieldSize.x, fieldPos.y - FieldSize.y, mConfiguration.cameraZOffset);
 
-            for (var i = 0; i < mWrapAroundCameras.Length; i++) mWrapAroundCameras[i].orthographicSize = cameSize;
+            for (var i = 0; i < wrapAroundCameras.Length; i++) wrapAroundCameras[i].orthographicSize = cameSize;
         }
 
         private void PositionBoundaries()
         {
             var fieldPos = Vector2.zero;
-            var boundaryThickness = GameManager.instance.Config.levelBoundaryThickness;
+            var boundaryThickness = mConfiguration.levelBoundaryThickness;
             var leftBoundaryPos = new Vector3(fieldPos.x - FieldSize.x / 2 - boundaryThickness / 2, fieldPos.y);
             var rightBoundaryPos = new Vector3(fieldPos.x + FieldSize.x / 2 + boundaryThickness / 2, fieldPos.y);
             var topBoundaryPos = new Vector3(fieldPos.x, fieldPos.y + FieldSize.y / 2 + boundaryThickness / 2);
@@ -449,17 +456,17 @@ namespace Game
             var horizontalBoundarySize = new Vector2(FieldSize.x, boundaryThickness);
 
 
-            mBoundaryColliders[0].transform.position = leftBoundaryPos;
-            mBoundaryColliders[0].size = verticalBoundarySize;
+            boundaryColliders[0].transform.position = leftBoundaryPos;
+            boundaryColliders[0].size = verticalBoundarySize;
 
-            mBoundaryColliders[1].transform.position = rightBoundaryPos;
-            mBoundaryColliders[1].size = verticalBoundarySize;
+            boundaryColliders[1].transform.position = rightBoundaryPos;
+            boundaryColliders[1].size = verticalBoundarySize;
 
-            mBoundaryColliders[2].transform.position = topBoundaryPos;
-            mBoundaryColliders[2].size = horizontalBoundarySize;
+            boundaryColliders[2].transform.position = topBoundaryPos;
+            boundaryColliders[2].size = horizontalBoundarySize;
 
-            mBoundaryColliders[3].transform.position = botBoundaryPos;
-            mBoundaryColliders[3].size = horizontalBoundarySize;
+            boundaryColliders[3].transform.position = botBoundaryPos;
+            boundaryColliders[3].size = horizontalBoundarySize;
         }
         #endregion
 
@@ -471,9 +478,14 @@ namespace Game
 
         private PoolManager mPoolManager;
 
+        private AudioManager mAudioManager;
+
         private float mStartLevelTime;
         
-        [SerializeField] private Camera[] mWrapAroundCameras;
-        [SerializeField] private BoxCollider2D[] mBoundaryColliders;
+        [SerializeField] private Camera[] wrapAroundCameras;
+        
+        [SerializeField] private BoxCollider2D[] boundaryColliders;
+
+        private Config mConfiguration;
     }
 }

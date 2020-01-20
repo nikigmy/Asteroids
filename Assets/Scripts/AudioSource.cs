@@ -40,7 +40,7 @@ public class AudioSource : MonoBehaviour
 
     private void ReturnObjectToPool()
     {
-        GameManager.instance.PoolManager.ReturnObject(this);
+        GameManager.Instance.PoolManager.ReturnObject(this);
     }
     
     private UnityEngine.AudioSource mSource;

@@ -14,10 +14,16 @@ namespace Input
     public class Joypad : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler, IDirectionalInput
     {
         public event EventHandler<DirectionalArgs> OnDirectinalInput;
-        
-        private void Start()
+
+        private void Awake()
         {
             mBgImage = GetComponent<RectTransform>();
+
+            Debug.Assert(pad != null);
+        }
+
+        private void Start()
+        {
             mRectSize = new Vector2(mBgImage.rect.width, mBgImage.rect.height);
         }
         
@@ -45,12 +51,12 @@ namespace Input
         public void OnPointerUp(PointerEventData e)
         {
             mInputVector = Vector2.zero;
-            mPad.anchoredPosition = Vector2.zero;
+            pad.anchoredPosition = Vector2.zero;
         }
         
         private void UpdateImagePosition()
         {
-            mPad.anchoredPosition = new Vector2(mInputVector.x * (mRectSize.x / 2), mInputVector.y * (mRectSize.y / 2));
+            pad.anchoredPosition = new Vector2(mInputVector.x * (mRectSize.x / 2), mInputVector.y * (mRectSize.y / 2));
         }
 
         private void UpdateInputVec(PointerEventData e)
@@ -71,6 +77,6 @@ namespace Input
 
         private Vector2 mRectSize;
         
-        [SerializeField] private RectTransform mPad;
+        [SerializeField] private RectTransform pad;
     }
 }
